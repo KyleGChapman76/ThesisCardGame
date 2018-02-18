@@ -189,6 +189,7 @@ GameObject:
   - component: {fileID: 937605318}
   - component: {fileID: 937605317}
   - component: {fileID: 937605319}
+  - component: {fileID: 937605320}
   m_Layer: 5
   m_Name: PlayerUIArea
   m_TagString: PlayerUIArea
@@ -263,6 +264,29 @@ MonoBehaviour:
     type: 2}
   faceDownCardRenderPrefab: {fileID: 1956934939007666, guid: 7c1586f4784ac6b48a6d755608f3ee88,
     type: 2}
+--- !u!114 &937605320
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 937605315}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: -2095666955, guid: f70555f144d8491a825f0804e09c671c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Padding:
+    m_Left: 0
+    m_Right: 0
+    m_Top: 0
+    m_Bottom: 0
+  m_ChildAlignment: 4
+  m_StartCorner: 0
+  m_StartAxis: 0
+  m_CellSize: {x: 150, y: 150}
+  m_Spacing: {x: 30, y: 0}
+  m_Constraint: 0
+  m_ConstraintCount: 2
 --- !u!1 &1036668527
 GameObject:
   m_ObjectHideFlags: 0
@@ -340,10 +364,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 1036668527}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 953c8b79a6d71d147aa1eed4548c652c, type: 3}
+  m_Script: {fileID: 11500000, guid: 31178ccf8f9d8634a8223c7ed5d6bbba, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  isHoveringOverThis: 0
 --- !u!1 &1132994314
 GameObject:
   m_ObjectHideFlags: 0
@@ -594,6 +617,7 @@ GameObject:
   - component: {fileID: 1642342712}
   - component: {fileID: 1642342711}
   - component: {fileID: 1642342713}
+  - component: {fileID: 1642342714}
   m_Layer: 5
   m_Name: OpponentUIArea
   m_TagString: Untagged
@@ -668,6 +692,29 @@ MonoBehaviour:
     type: 2}
   faceDownCardRenderPrefab: {fileID: 1956934939007666, guid: 7c1586f4784ac6b48a6d755608f3ee88,
     type: 2}
+--- !u!114 &1642342714
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1642342709}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: -2095666955, guid: f70555f144d8491a825f0804e09c671c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Padding:
+    m_Left: 0
+    m_Right: 0
+    m_Top: 0
+    m_Bottom: 0
+  m_ChildAlignment: 4
+  m_StartCorner: 0
+  m_StartAxis: 0
+  m_CellSize: {x: 150, y: 150}
+  m_Spacing: {x: 30, y: 0}
+  m_Constraint: 0
+  m_ConstraintCount: 2
 --- !u!1 &1969892540
 GameObject:
   m_ObjectHideFlags: 0
@@ -725,3 +772,5 @@ MonoBehaviour:
     type: 2}
   localPlayer: {fileID: 0}
   opponentPlayer: {fileID: 0}
+  localHandRenderer: {fileID: 937605319}
+  opponentHandRenderer: {fileID: 1642342713}

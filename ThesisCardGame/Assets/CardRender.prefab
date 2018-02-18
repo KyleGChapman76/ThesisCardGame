@@ -39,6 +39,7 @@ GameObject:
   - component: {fileID: 222562324501484552}
   - component: {fileID: 114943605677100988}
   - component: {fileID: 114555144474754666}
+  - component: {fileID: 225974064625021886}
   m_Layer: 5
   m_Name: CardRender
   m_TagString: Untagged
@@ -144,9 +145,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   mainCamera: {fileID: 0}
   canvas: {fileID: 0}
-  playAreaMouseOver: {fileID: 0}
-  dragDropSizeModifier: 1.2
-  dragDropTransparency: 0.6
+  playerUIArea: {fileID: 0}
 --- !u!114 &114943605677100988
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -248,3 +247,14 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 66.6}
   m_SizeDelta: {x: 120, y: 120}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!225 &225974064625021886
+CanvasGroup:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1252220700500520}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0

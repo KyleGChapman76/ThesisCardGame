@@ -2,6 +2,13 @@
 
 public abstract class Card : IComparable
 {
+	public int CardID
+	{
+		get
+		{
+			return cardID;
+		}
+	}
 	protected int cardID;
 
 	public Card(int cardID)

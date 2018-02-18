@@ -6,8 +6,14 @@ using UnityEngine.EventSystems;
 //taken from https://gamedev.stackexchange.com/questions/125986/how-can-i-get-ui-element-over-which-pointer-is-in-unity3d
 public class MouseHover : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
-	[HideInInspector]
-	public bool isHoveringOverThis;
+	public bool IsHoveringOverThis
+	{
+		get
+		{
+			return isHoveringOverThis;
+		}
+	}
+	private bool isHoveringOverThis;
 
 	public void OnPointerEnter(PointerEventData eventData)
 	{

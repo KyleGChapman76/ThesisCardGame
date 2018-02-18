@@ -4,8 +4,23 @@ using UnityEngine;
 
 public class ResourceCard : Card
 {
-	int resourcesGiven;
-	int thresholdType;
+	public int ResourcesGiven
+	{
+		get
+		{
+			return resourcesGiven;
+		}
+	}
+	protected int resourcesGiven;
+
+	public int ThresholdType
+	{
+		get
+		{
+			return thresholdType;
+		}
+	}
+	protected int thresholdType;
 
 	public ResourceCard(int cardID, int resourcesGiven, int thresholdType) : base(cardID)
 	{

@@ -5,79 +5,54 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-public class DraggableCard : MonoBehaviour, IPointerDownHandler
+public class DraggableCard : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
 {
-	public Camera mainCamera;
-	private GameObject dragDropCardRender;
-	private RectTransform dragDropCardRenderRectTransform;
-	public Canvas canvas;
-	public MouseHover playAreaMouseOver;
+	public static DraggableCard cardBeingDragged;
 
-	public float dragDropSizeModifier;
-	public float dragDropTransparency;
+	public Camera mainCamera;
+
+	public Canvas canvas;
+	public GameObject playerUIArea;
+	private RectTransform thisRectTransform;
+	private CanvasGroup thiscanvasGroup;
 
 	public Card cardThisRenders;
-	private TCGGameManager tcgGameManager;
+	private ClientSideGameManager tcgGameManager;
 
 	public void Start()
 	{
-		//create the DragDrop card render as a copy of this
-		dragDropCardRender = Instantiate(this.gameObject);
-		dragDropCardRender.transform.SetParent(canvas.transform);
-		
-		//disable or modify some aspects of the dragdrop clone
-		Destroy(dragDropCardRender.GetComponent<DraggableCard>());
-		Image dragDropImage = dragDropCardRender.GetComponent<Image>();
-		dragDropImage.raycastTarget = false;
-		dragDropImage.color = new Color(dragDropImage.color.r, dragDropImage.color.g, dragDropImage.color.b, dragDropTransparency);
-
-		//set DragDrop recttransform settings
-		dragDropCardRenderRectTransform = dragDropCardRender.GetComponent<RectTransform>();
-		dragDropCardRenderRectTransform.sizeDelta *= dragDropSizeModifier;
-
-		//disable dragdrop render by default
-		dragDropCardRender.SetActive(false);
-
 		mainCamera = GameObject.FindGameObjectWithTag("MainCamera").GetComponent<Camera>();
-		playAreaMouseOver = GameObject.FindGameObjectWithTag("PlayArea").GetComponent<MouseHover>();
-		tcgGameManager = GameObject.FindObjectOfType<TCGGameManager>();
+		tcgGameManager = GameObject.FindObjectOfType<ClientSideGameManager>();
+		thisRectTransform = GetComponent<RectTransform>();
+		thiscanvasGroup = GetComponent<CanvasGroup>();
     }
 
-	public void OnPointerDown(PointerEventData eventData)
+	public void OnBeginDrag(PointerEventData eventData)
 	{
-		dragDropCardRender.SetActive(true);
-
-		StopCoroutine("UpdateDraggableCard");
-		StartCoroutine("UpdateDraggableCard");
+		cardBeingDragged = this;
+		thisRectTransform.SetParent(canvas.transform);
+		thiscanvasGroup.blocksRaycasts = false;
 	}
 
-	private IEnumerator UpdateDraggableCard()
+	public void OnDrag(PointerEventData eventData)
 	{
-		for (;;)
-		{
-			Vector2 mouseScreenPosition = Input.mousePosition;
-			Vector3 mouseViewportPosition = mainCamera.ScreenToViewportPoint(new Vector3(mouseScreenPosition.x, mouseScreenPosition.y, 0));
+		Vector2 mouseScreenPosition = Input.mousePosition;
+		Vector3 mouseViewportPosition = mainCamera.ScreenToViewportPoint(new Vector3(mouseScreenPosition.x, mouseScreenPosition.y, 0));
 
-			dragDropCardRenderRectTransform.anchorMin = new Vector2(mouseViewportPosition.x, mouseViewportPosition.y);
-			dragDropCardRenderRectTransform.anchorMax = new Vector2(mouseViewportPosition.x, mouseViewportPosition.y);
-			dragDropCardRenderRectTransform.anchoredPosition = Vector2.zero;
+		thisRectTransform.anchorMin = new Vector2(mouseViewportPosition.x, mouseViewportPosition.y);
+		thisRectTransform.anchorMax = new Vector2(mouseViewportPosition.x, mouseViewportPosition.y);
+		thisRectTransform.anchoredPosition = Vector2.zero;
+	}
 
-			//if mouse no longer held down, stop dragging
-			if (!Input.GetMouseButton(0))
-			{
-				dragDropCardRender.SetActive(false);
+	public void OnEndDrag(PointerEventData eventData)
+	{
+		thisRectTransform.SetParent(playerUIArea.transform);
+		thiscanvasGroup.blocksRaycasts = true;
+	}
 
-				//card has been dragged into play area
-				if (playAreaMouseOver.isHoveringOverThis)
-				{
-					tcgGameManager.TryPlayCard(cardThisRenders);
-                }
-
-				break;
-			}
-
-			yield return null;
-		}
-    }
-
+	public void CardDroppedInPlayArea()
+	{
+		tcgGameManager.TryPlayCard(cardThisRenders);
+		cardBeingDragged = null;
+	}
 }

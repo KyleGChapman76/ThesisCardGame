@@ -42,10 +42,10 @@ MonoBehaviour:
     y: 30
     width: 1912
     height: 940
-  m_MinSize: {x: 679, y: 492}
-  m_MaxSize: {x: 14002, y: 14042}
+  m_MinSize: {x: 683, y: 492}
+  m_MaxSize: {x: 14004, y: 14042}
   vertical: 0
-  controlID: 106
+  controlID: 74
 --- !u!114 &3
 MonoBehaviour:
   m_ObjectHideFlags: 52
@@ -64,8 +64,8 @@ MonoBehaviour:
     y: 0
     width: 466
     height: 940
-  m_MinSize: {x: 275, y: 50}
-  m_MaxSize: {x: 4000, y: 4000}
+  m_MinSize: {x: 277, y: 71}
+  m_MaxSize: {x: 4002, y: 4021}
   m_ActualView: {fileID: 15}
   m_Panes:
   - {fileID: 15}
@@ -89,8 +89,8 @@ MonoBehaviour:
     y: 0
     width: 271
     height: 513
-  m_MinSize: {x: 200, y: 200}
-  m_MaxSize: {x: 4000, y: 4000}
+  m_MinSize: {x: 202, y: 221}
+  m_MaxSize: {x: 4002, y: 4021}
   m_ActualView: {fileID: 16}
   m_Panes:
   - {fileID: 16}
@@ -143,7 +143,7 @@ MonoBehaviour:
     y: 0
     width: 1912
     height: 990
-  m_MinSize: {x: 950, y: 300}
+  m_MinSize: {x: 950, y: 542}
   m_MaxSize: {x: 10000, y: 10000}
 --- !u!114 &7
 MonoBehaviour:
@@ -206,10 +206,10 @@ MonoBehaviour:
     y: 0
     width: 1446
     height: 940
-  m_MinSize: {x: 404, y: 492}
+  m_MinSize: {x: 406, y: 492}
   m_MaxSize: {x: 10002, y: 14042}
   vertical: 1
-  controlID: 84
+  controlID: 75
 --- !u!114 &10
 MonoBehaviour:
   m_ObjectHideFlags: 52
@@ -230,10 +230,10 @@ MonoBehaviour:
     y: 0
     width: 1446
     height: 513
-  m_MinSize: {x: 404, y: 221}
-  m_MaxSize: {x: 8004, y: 4021}
+  m_MinSize: {x: 406, y: 221}
+  m_MaxSize: {x: 8006, y: 4021}
   vertical: 0
-  controlID: 85
+  controlID: 51
 --- !u!114 &11
 MonoBehaviour:
   m_ObjectHideFlags: 52
@@ -363,7 +363,7 @@ MonoBehaviour:
   m_LastFolders:
   - Assets
   m_LastFoldersGridSize: -1
-  m_LastProjectPath: C:\Users\Kyle Chapman\Desktop\ThesisCardGame
+  m_LastProjectPath: C:\Users\Kyle Chapman\Documents\GitHub\ThesisCardGame\ThesisCardGame
   m_IsLocked: 0
   m_FolderTreeState:
     scrollPos: {x: 0, y: 0}
@@ -425,7 +425,7 @@ MonoBehaviour:
     m_SelectedInstanceIDs: 
     m_LastClickedInstanceID: 0
     m_HadKeyboardFocusLastEvent: 1
-    m_ExpandedInstanceIDs: b20600007896ffff000000007c270000
+    m_ExpandedInstanceIDs: b20600007896ffff00000000
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 
@@ -515,28 +515,28 @@ MonoBehaviour:
   m_PersistentViewDataDictionary: {fileID: 0}
   m_TreeViewState:
     scrollPos: {x: 0, y: 0}
-    m_SelectedIDs: f0270000
-    m_LastClickedID: 10224
-    m_ExpandedIDs: 5698feff22e8feff5a8fffff9efbffff00000000f02700000c280000
+    m_SelectedIDs: de070000
+    m_LastClickedID: 0
+    m_ExpandedIDs: f809fcffaa0afcffc60bfcffce0bfcff4e95fcffb2edfcffdeeefcff78fefcff48fffcff7200fdff3401fdffca14fdff8a15fdffb416fdff6617fdffc21ffdff2626fdfff426fdff1e28fdff2628fdffb634fdffc048fdffe250fdffb851fdffa053fdffa853fdff4e57fdffe061fdffa462fdffb863fdffcc63fdff48c0fdff14cefdffd0cffdff76deffff54eaffff12f3ffffe4f3fffff8f4ffff0cf5ffff9efbffff000000008a2a0000a62a0000443b0000
     m_RenameOverlay:
       m_UserAcceptedRename: 0
-      m_Name: CardRender
-      m_OriginalName: CardRender
+      m_Name: 
+      m_OriginalName: 
       m_EditFieldRect:
         serializedVersion: 2
         x: 0
         y: 0
         width: 0
         height: 0
-      m_UserData: -92074
+      m_UserData: 0
       m_IsWaitingForDelay: 0
       m_IsRenaming: 0
-      m_OriginalEventType: 0
+      m_OriginalEventType: 11
       m_IsRenamingFilename: 0
       m_ClientGUIView: {fileID: 4}
     m_SearchString: 
   m_ExpandedScenes:
-  - GameScene
+  - MainMenu
   m_CurrenRootInstanceID: 0
   m_Locked: 0
   m_CurrentSortingName: TransformSorting
@@ -568,14 +568,14 @@ MonoBehaviour:
     height: 492
   m_PersistentViewDataDictionary: {fileID: 0}
   m_SceneLighting: 1
-  lastFramingTime: 6449.181698005267
+  lastFramingTime: 3847.1338589793804
   m_2DMode: 0
   m_isRotationLocked: 0
   m_AudioPlay: 0
   m_Position:
-    m_Target: {x: 0, y: 66.6, z: 0}
+    m_Target: {x: 491.4617, y: 59.22789, z: 1636.9607}
     speed: 2
-    m_Value: {x: 0, y: 66.6, z: 0}
+    m_Value: {x: 491.4617, y: 59.22789, z: 1636.9607}
   m_RenderMode: 0
   m_ValidateTrueMetals: 0
   m_SceneViewState:
@@ -599,13 +599,13 @@ MonoBehaviour:
       speed: 2
       m_Value: 0
   m_Rotation:
-    m_Target: {x: -0.25493085, y: -0.15668193, z: 0.04190069, w: -0.95326036}
+    m_Target: {x: -0.093174644, y: 0.011043939, z: -0.001034373, w: -0.995588}
     speed: 2
-    m_Value: {x: -0.25493088, y: -0.15668194, z: 0.041900694, w: -0.9532604}
+    m_Value: {x: -0.093174644, y: 0.011043939, z: -0.001034373, w: -0.995588}
   m_Size:
-    m_Target: 237.96638
+    m_Target: 2423.198
     speed: 2
-    m_Value: 237.96638
+    m_Value: 2423.198
   m_Ortho:
     m_Target: 0
     speed: 2

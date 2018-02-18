@@ -4,11 +4,13 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
 
-public class TCGGameManager : MonoBehaviour
+public class ClientSideGameManager : MonoBehaviour
 {
 	public GameObject playerPrefab;
 	public TCGPlayer localPlayer;
 	public TCGPlayer opponentPlayer;
+	public HandRenderer localHandRenderer;
+	public HandRenderer opponentHandRenderer;
 
 	private void Start ()
 	{
@@ -19,12 +21,12 @@ public class TCGGameManager : MonoBehaviour
 		{
 			StartCoroutine("CheckForPlayersLoaded");
 		}
+		//otherwise, create a player to play the game
 		else
 		{
 			GameObject localPlayerObject = Instantiate(playerPrefab);
             localPlayer = localPlayerObject.GetComponent<TCGPlayer>();
-			Destroy(localPlayerObject.GetComponent<NetworkIdentity>());
-			InitializeGame();
+			InitializeLocalGame();
 		}
     }
 
@@ -46,7 +48,7 @@ public class TCGGameManager : MonoBehaviour
 					opponentPlayer = players[0];
 				}
 
-				InitializeGame();
+				InitializeLocalGame();
 				break;
 			}
 			else
@@ -56,7 +58,7 @@ public class TCGGameManager : MonoBehaviour
 		}
 	}
 
-	private void InitializeGame()
+	private void InitializeLocalGame()
 	{
 		Debug.Log("Beginning the game.");
 
@@ -82,38 +84,33 @@ public class TCGGameManager : MonoBehaviour
 
 		localPlayer.Library = new Library(cardList);
 		localPlayer.InitializeLocalPlayer();
-	}
 
-	public void UpdateEnemyHandUI()
+		UpdateCardShowingUI();
+    }
+
+	public void UpdateCardShowingUI()
 	{
-		//TODO
+		if (localHandRenderer == null || localPlayer == null || localPlayer.Hand == null)
+		{
+			Debug.Log("Unable to update card showing UI for local player.");
+		}
+		else
+		{
+			localHandRenderer.RenderCards(localPlayer.Hand);
+		}
+
+		if (opponentHandRenderer == null || opponentPlayer == null || opponentPlayer.Hand == null)
+		{
+			Debug.Log("Unable to update card showing UI for opponent.");
+		}
+		else
+		{
+			opponentHandRenderer.RenderCards(opponentPlayer.Hand);
+		}
 	}
 
 	public void TryPlayCard(Card card)
 	{
-		if (card == null)
-		{
-			Debug.Log("Can't play a null card.");
-			return;
-		}
-
-		if (card is ResourceCard)
-		{
-			Debug.Log("Local player playing a resource card.");
-			//TODO
-		}
-		else if (card is SpellCard)
-		{
-			if (card is CreatureCard)
-			{
-				Debug.Log("Local player playing a creature card.");
-				//TODO
-			}
-			else
-			{
-				Debug.Log("Local player playing a spell card.");
-				//TODO
-			}
-		}
+		localPlayer.TryPlayCard(card);
 	}
 }

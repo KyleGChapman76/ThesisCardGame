@@ -11,6 +11,7 @@ public class HandRenderer : MonoBehaviour
 
 	public void RenderCards(List<Card> hand, bool faceUp = true)
 	{
+		Debug.Log("Rendering cards.");
 		cardRenderObjects = new GameObject[hand.Count];
 		for (int i = 0; i < hand.Count; i++)
 		{
@@ -21,13 +22,11 @@ public class HandRenderer : MonoBehaviour
 			GameObject newCardRenderer = Instantiate(properPrefab);
 			newCardRenderer.transform.SetParent(this.gameObject.transform);
 
-			//TODO shape and transform cardRender objects to display nicely on screen
-			newCardRenderer.GetComponent<RectTransform>().anchoredPosition = new Vector2(500-200f * i, 0f);
-
 			cardRenderObjects[i] = newCardRenderer;
 
 			DraggableCard dragableCardHandler = newCardRenderer.GetComponent<DraggableCard>();
 			dragableCardHandler.canvas = parentCanvas;
+			dragableCardHandler.playerUIArea = this.gameObject;
 			dragableCardHandler.cardThisRenders = hand[i];
         }
     }
