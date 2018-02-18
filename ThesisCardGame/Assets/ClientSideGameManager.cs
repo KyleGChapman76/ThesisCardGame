@@ -11,6 +11,8 @@ public class ClientSideGameManager : MonoBehaviour
 	public TCGPlayer opponentPlayer;
 	public HandRenderer localHandRenderer;
 	public HandRenderer opponentHandRenderer;
+	public ResourcesRenderer localResourcesRenderer;
+	public ResourcesRenderer opponentResourcesRenderer;
 
 	private void Start ()
 	{
@@ -85,7 +87,13 @@ public class ClientSideGameManager : MonoBehaviour
 		localPlayer.Library = new Library(cardList);
 		localPlayer.InitializeLocalPlayer();
 
+		UpdateUI();
+    }
+
+	public void UpdateUI()
+	{
 		UpdateCardShowingUI();
+		UpdatePlayerResourcesUI();
     }
 
 	public void UpdateCardShowingUI()
@@ -106,6 +114,27 @@ public class ClientSideGameManager : MonoBehaviour
 		else
 		{
 			opponentHandRenderer.RenderCards(opponentPlayer.Hand);
+		}
+	}
+
+	public void UpdatePlayerResourcesUI()
+	{
+		if (localResourcesRenderer == null || localPlayer == null)
+		{
+			Debug.Log("Unable to update resources showing UI for local player.");
+		}
+		else
+		{
+			localResourcesRenderer.RenderResources(localPlayer.MaxResourcesPerTurn, localPlayer.CurrentResources);
+        }
+
+		if (localResourcesRenderer == null || opponentPlayer == null)
+		{
+			Debug.Log("Unable to update resources showing UI for opponent.");
+		}
+		else
+		{
+			opponentResourcesRenderer.RenderResources(opponentPlayer.MaxResourcesPerTurn, opponentPlayer.CurrentResources);
 		}
 	}
 

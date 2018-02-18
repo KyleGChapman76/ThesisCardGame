@@ -10,6 +10,7 @@ public class TCGPlayer : NetworkBehaviour
 	//library management
 	public const int STARTING_HAND_SIZE = 6;
 	public const int MAX_HAND_SIZE = 8;
+	public const int MAX_MAX_RESOURCES_PER_TURN = 12;
 
 	public Library Library
 	{
@@ -37,10 +38,28 @@ public class TCGPlayer : NetworkBehaviour
 	private List<Card> hand;
 
 	//resources mangement
+	public int MaxResourcesPerTurn
+	{
+		get
+		{
+			return maxResourcesPerTurn;
+		}
+	}
 	[SyncVar]
 	private int maxResourcesPerTurn;
+
+	public int CurrentResources
+	{
+		get
+		{
+			return currentResources;
+		}
+	}
 	[SyncVar]
 	private int currentResources;
+
+	private bool multiplayerGame;
+	private ClientSideGameManager clientGameManager;
 
 	public void InitializeLocalPlayer()
 	{
@@ -48,6 +67,13 @@ public class TCGPlayer : NetworkBehaviour
 
 		hand = new List<Card>();
 		DrawLocalHand();
+
+		maxResourcesPerTurn = 10;
+		currentResources = 4;
+
+		multiplayerGame = GameObject.FindObjectOfType<NetworkManager>() != null;
+
+		clientGameManager = GameObject.FindObjectOfType<ClientSideGameManager>();
     }
 
 	private void DrawLocalHand()
@@ -73,14 +99,17 @@ public class TCGPlayer : NetworkBehaviour
 			return;
 		}
 
-		if (isServer)
+		if (multiplayerGame)
 		{
-			RpcPlayerPlaysSpell(0);
+			if (isServer)
+			{
+				RpcPlayerPlaysSpell(0);
+			}
+			else
+			{
+				CmdPlayerPlaysSpell(1);
+			}
 		}
-		else
-		{
-			CmdPlayerPlaysSpell(1);
-        }
 
 		if (card is ResourceCard)
 		{
@@ -109,7 +138,9 @@ public class TCGPlayer : NetworkBehaviour
 				//TODO
 			}
 		}
-	}
+
+		clientGameManager.UpdateUI();
+    }
 
 	[ClientRpc]
 	private void RpcPlayerPlaysSpell(int playerNum)
