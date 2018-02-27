@@ -11,9 +11,19 @@ public abstract class Card : IComparable
 	}
 	protected int cardID;
 
-	public Card(int cardID)
+	public string CardName
+	{
+		get
+		{
+			return cardName;
+		}
+	}
+	protected string cardName;
+
+	public Card(int cardID, string cardName)
 	{
 		this.cardID = cardID;
+		this.cardName = cardName;
     }
 
 	public int CompareTo(object obj)

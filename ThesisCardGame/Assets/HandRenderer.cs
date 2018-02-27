@@ -16,6 +16,7 @@ public class HandRenderer : MonoBehaviour
 		for (int i = 0; i < hand.Count; i++)
 		{
 			GameObject properPrefab = cardRenderPrefab;
+
 			if (!faceUp)
 				properPrefab = faceDownCardRenderPrefab;
 
@@ -28,6 +29,13 @@ public class HandRenderer : MonoBehaviour
 			dragableCardHandler.canvas = parentCanvas;
 			dragableCardHandler.playerUIArea = this.gameObject;
 			dragableCardHandler.cardThisRenders = hand[i];
+
+			//set attributes for face up cards
+			Card card = hand[i];
+            if (faceUp)
+			{
+				dragableCardHandler.SetCardName(card.CardName);
+            }
         }
     }
 }

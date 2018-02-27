@@ -22,7 +22,7 @@ public class ResourceCard : Card
 	}
 	protected int thresholdType;
 
-	public ResourceCard(int cardID, int resourcesGiven, int thresholdType) : base(cardID)
+	public ResourceCard(int cardID, string cardName, int resourcesGiven, int thresholdType) : base(cardID, cardName)
 	{
 		this.resourcesGiven = resourcesGiven;
 		this.thresholdType = thresholdType;

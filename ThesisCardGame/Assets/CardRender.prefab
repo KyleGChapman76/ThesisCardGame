@@ -146,6 +146,8 @@ MonoBehaviour:
   mainCamera: {fileID: 0}
   canvas: {fileID: 0}
   playerUIArea: {fileID: 0}
+  cardName: {fileID: 114502894760312816}
+  cardText: {fileID: 114380608817503108}
 --- !u!114 &114943605677100988
 MonoBehaviour:
   m_ObjectHideFlags: 1

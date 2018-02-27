@@ -14,6 +14,8 @@ public class ClientSideGameManager : MonoBehaviour
 	public ResourcesRenderer localResourcesRenderer;
 	public ResourcesRenderer opponentResourcesRenderer;
 
+	private Card[] cards;
+
 	private void Start ()
 	{
 		Debug.Log("GameManager began.");
@@ -66,15 +68,23 @@ public class ClientSideGameManager : MonoBehaviour
 
 		//TODO unhardcode libraries
 
-		Card card00 = new CreatureCard(0, 2, 2, 2);
-		Card card01 = new CreatureCard(1, 4, 3, 4);
-		Card card02 = new SpellCard(2, 3);
+		Card card00 = new ResourceCard(0, "Resource 1", 1, 1);
+        Card card01 = new CreatureCard(1, "Creature 1", 2, 2, 2);
+		Card card02 = new CreatureCard(2, "Creature 2", 4, 3, 4);
+		Card card03 = new SpellCard(3, "Spell 1", 1);
+		Card card04 = new SpellCard(4, "Spell 2", 2);
+		Card card05 = new SpellCard(5, "Spell 3", 3);
+
+		cards = new Card[] { card00, card01, card02, card03, card04, card05};
 
 		Deck hardcodedDeck = new Deck(5, 8, 4);
 
-		hardcodedDeck.AddCard(card00, 2);
-		hardcodedDeck.AddCard(card01, 3);
+		hardcodedDeck.AddCard(card00, 1);
+		hardcodedDeck.AddCard(card01, 1);
 		hardcodedDeck.AddCard(card02, 1);
+		hardcodedDeck.AddCard(card03, 1);
+		hardcodedDeck.AddCard(card04, 1);
+		hardcodedDeck.AddCard(card05, 1);
 
 		List<Card> cardList;
 
@@ -85,9 +95,28 @@ public class ClientSideGameManager : MonoBehaviour
 		}
 
 		localPlayer.Library = new Library(cardList);
-		localPlayer.InitializeLocalPlayer();
+
+		localPlayer.InitializeLocalPlayer(this);
+
+		if (opponentPlayer != null)
+		{
+			opponentPlayer.InitializeOpponent(this);
+		}
 
 		UpdateUI();
+    }
+
+	public Card GetCardWithID(int id)
+	{
+		if (cards[id].CardID == id)
+		{
+			return cards[id];
+		}
+		else
+		{
+			Debug.Log("Card in slot " + id + " does not have that ID.");
+			return null;
+        }
     }
 
 	public void UpdateUI()

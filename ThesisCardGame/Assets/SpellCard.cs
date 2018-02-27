@@ -9,7 +9,7 @@
 	}
 	protected int manaCost;
 
-	public SpellCard(int cardID, int manaCost) : base(cardID)
+	public SpellCard(int cardID, string cardName, int manaCost) : base(cardID, cardName)
 	{
 		this.manaCost = manaCost;
 	}

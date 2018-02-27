@@ -19,12 +19,20 @@ public class DraggableCard : MonoBehaviour, IBeginDragHandler, IDragHandler, IEn
 	public Card cardThisRenders;
 	private ClientSideGameManager tcgGameManager;
 
+	public Text cardName;
+	public Text cardText;
+
 	public void Start()
 	{
 		mainCamera = GameObject.FindGameObjectWithTag("MainCamera").GetComponent<Camera>();
 		tcgGameManager = GameObject.FindObjectOfType<ClientSideGameManager>();
 		thisRectTransform = GetComponent<RectTransform>();
 		thiscanvasGroup = GetComponent<CanvasGroup>();
+    }
+
+	public void SetCardName(string name)
+	{
+		cardName.text = name;
     }
 
 	public void OnBeginDrag(PointerEventData eventData)
