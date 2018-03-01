@@ -33,10 +33,20 @@ public class TCGPlayer : NetworkBehaviour
 		{
 			if (hand == null)
 				return null;
-			return new List<Card>(hand);
+			return hand;
 		}
 	}
 	private List<Card> hand;
+
+	public int HandCount
+	{
+		get
+		{
+			return handCount;
+        }
+	}
+	[SyncVar(hook = "HandCountChanged")]
+	private int handCount;
 
 	//resources mangement
 	public int MaxResourcesPerTurn
@@ -83,6 +93,21 @@ public class TCGPlayer : NetworkBehaviour
 		}
 	}
 
+	public void InitializeSinglePlayer(ClientSideGameManager clientSide)
+	{
+		Debug.Log("Initializing single player.");
+
+		hand = new List<Card>();
+		DrawLocalHand();
+
+		maxResourcesPerTurn = STARTING_MAX_RESOURCES_PER_TURN;
+		currentResources = maxResourcesPerTurn;
+
+		multiplayerGame = false;
+
+		clientGameManager = clientSide;
+	}
+
 	public void InitializeLocalPlayer(ClientSideGameManager clientSide)
 	{
 		Debug.Log("Initializing player on " + (isServer ? " server." : " client."));
@@ -101,7 +126,7 @@ public class TCGPlayer : NetworkBehaviour
 		clientGameManager = clientSide;
     }
 
-	public void InitializeOpponent(ClientSideGameManager clientSide)
+	public void InitializeMultiplayerOpponent(ClientSideGameManager clientSide)
 	{
 		multiplayerGame = GameObject.FindObjectOfType<NetworkManager>() != null;
 		clientGameManager = clientSide;
@@ -124,12 +149,31 @@ public class TCGPlayer : NetworkBehaviour
 		}
 		for (int i = 0; i < handSize; i++)
 		{
-			hand.Add(library.DrawCard());
+			Card cardDrawn;
+			if (library.DrawCard(out cardDrawn))
+			{
+				hand.Add(cardDrawn);
+			}
+			else
+			{
+				Debug.LogError("Could not draw enough cards for hand.");
+			}
+		}
+
+		if (multiplayerGame && !isServer)
+		{
+			CmdAnnounceHandSize(hand.Count, 1);
+		}
+		else
+		{
+			handCount = hand.Count;
 		}
 	}
 
 	private void CurrentResourcesChanged(int value)
 	{
+		currentResources = value;
+        Debug.Log("CURRENT RESOURCES HOOK: " + value);
 		if (clientGameManager != null)
 		{
 			clientGameManager.UpdatePlayerResourcesUI();
@@ -138,14 +182,26 @@ public class TCGPlayer : NetworkBehaviour
 
 	private void MaxResourcesPerTurnChanged(int value)
 	{
+		maxResourcesPerTurn = value;
+		Debug.Log("MAX RESOURCES HOOK: " + value);
 		if (clientGameManager != null)
 		{
 			clientGameManager.UpdatePlayerResourcesUI();
 		}
 	}
 
+	private void HandCountChanged(int value)
+	{
+		handCount = value;
+		Debug.Log("HAND COUNT HOOK: " + value);
+		if (clientGameManager != null)
+		{
+			clientGameManager.UpdateCardShowingUI();
+		}
+	}
+
 	//client side logic
-	public void TryPlayCard(Card card)
+	public void TryPlayCard(CardDefinition card)
 	{
 		if (card == null)
 		{
@@ -156,14 +212,14 @@ public class TCGPlayer : NetworkBehaviour
 		if (multiplayerGame)
 		{
 			bool cardPlayValid = false;
-			if (card is ResourceCard)
+			if (card is ResourceCardDefinition)
 			{
 				//TODO check if the player can play a resource card this turn
 				cardPlayValid = true;
             }
-			else if (card is SpellCard)
+			else if (card is SpellCardDefinition)
 			{
-				SpellCard spellCard = (SpellCard)card;
+				SpellCardDefinition spellCard = (SpellCardDefinition)card;
 				if (spellCard.ManaCost > currentResources)
 				{
 					Debug.Log("Not enough resources (current = " + currentResources.ToString() + ") to cast that spell with cost: " + spellCard.ManaCost.ToString());
@@ -193,35 +249,35 @@ public class TCGPlayer : NetworkBehaviour
     }
 
 	//server side checking and implementation
-	private void PlayCard(Card card, int playerNum)
+	private void PlayCard(CardDefinition card, int playerNum)
 	{
-		if (card is ResourceCard)
+		if (card is ResourceCardDefinition)
 		{
 			Debug.Log("Player " + playerNum + " playing a resource card.");
 
 			//TODO check if the player can play a resource card this turn
 
-			maxResourcesPerTurn += ((ResourceCard)card).ResourcesGiven;
+			maxResourcesPerTurn += ((ResourceCardDefinition)card).ResourcesGiven;
 		}
-		else if (card is SpellCard)
+		else if (card is SpellCardDefinition)
 		{
-			SpellCard spellCard = (SpellCard)card;
+			SpellCardDefinition spellCard = (SpellCardDefinition)card;
 			if (spellCard.ManaCost > currentResources)
 			{
-				Debug.Log("Not enough resources (current = " + currentResources.ToString() + ") to cast that spell with cost: " + spellCard.ManaCost.ToString());
+				Debug.Log("Player " + playerNum + " doesn't have enough resources (current = " + currentResources.ToString() + ") to cast that spell with cost: " + spellCard.ManaCost.ToString());
 				return;
 			}
 
 			currentResources -= spellCard.ManaCost;
 
-			if (card is CreatureCard)
+			if (card is CreatureCardDefinition)
 			{
-				Debug.Log("Local player playing a creature card.");
+				Debug.Log("Player " + playerNum + " playing a creature card.");
 				//TODO
 			}
 			else
 			{
-				Debug.Log("Local player playing a spell card.");
+				Debug.Log("Player " + playerNum + " laying a spell card.");
 				//TODO
 			}
 		}
@@ -229,11 +285,11 @@ public class TCGPlayer : NetworkBehaviour
 		clientGameManager.UpdateUI();
 	}
 
-	//server tells the client that a card has been played
+	//server tells the client that a card of a certain ID has been played
 	[ClientRpc]
 	private void RpcPlayerPlaysCard(int cardID, int playerNum)
 	{
-		Card card = clientGameManager.GetCardWithID(cardID);
+		CardDefinition card = CardDefinition.GetCardDefinitionWithID(cardID);
 		Debug.Log("Player " + playerNum + " played card " + card.CardName + " (" + cardID + ").");
 		
 		//TODO animations and such
@@ -243,15 +299,24 @@ public class TCGPlayer : NetworkBehaviour
 	[Command]
 	private void CmdPlayerPlaysCard(int cardID, int playerNum)
 	{
-		Card card = clientGameManager.GetCardWithID(cardID);
+		CardDefinition card = CardDefinition.GetCardDefinitionWithID(cardID);
 		PlayCard(card, playerNum);
 		RpcPlayerPlaysCard(cardID, playerNum);
     }
 
+	//client tells the server that it has reset its resources
 	[Command]
 	private void CmdPlayerResetsResources(int playerNum)
 	{
 		Debug.Log("Player " + playerNum + " resetting their resources.");
 		currentResources = maxResourcesPerTurn;
+	}
+
+	//client tells the server that its hand size has changed
+	[Command]
+	private void CmdAnnounceHandSize(int handSize, int playerNum)
+	{
+		Debug.Log("Player " + playerNum + " hand size became " + handSize);
+		handCount = handSize;
 	}
 }

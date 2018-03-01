@@ -21,6 +21,7 @@ public class DraggableCard : MonoBehaviour, IBeginDragHandler, IDragHandler, IEn
 
 	public Text cardName;
 	public Text cardText;
+	public Text cardCost;
 
 	public void Start()
 	{
@@ -30,9 +31,15 @@ public class DraggableCard : MonoBehaviour, IBeginDragHandler, IDragHandler, IEn
 		thiscanvasGroup = GetComponent<CanvasGroup>();
     }
 
-	public void SetCardName(string name)
+	public void UpdateCardDisplay()
 	{
-		cardName.text = name;
+		if (cardThisRenders == null)
+		{
+			Debug.LogError("Can't update card display when this draggable card has no reference to a card.");
+		}
+		cardName.text = cardThisRenders.BaseDefinition.CardName;
+		cardText.text = "Not implemented yet.";
+		cardCost.text = (cardThisRenders is SpellCard) ? (((SpellCard)cardThisRenders).BaseDefinition.CardName).ToString() : "";
     }
 
 	public void OnBeginDrag(PointerEventData eventData)

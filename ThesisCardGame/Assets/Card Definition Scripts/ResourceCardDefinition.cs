@@ -1,8 +1,9 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ResourceCard : Card
+public class ResourceCardDefinition : CardDefinition
 {
 	public int ResourcesGiven
 	{
@@ -22,9 +23,14 @@ public class ResourceCard : Card
 	}
 	protected int thresholdType;
 
-	public ResourceCard(int cardID, string cardName, int resourcesGiven, int thresholdType) : base(cardID, cardName)
+	public ResourceCardDefinition(string cardName, int resourcesGiven, int thresholdType) : base(cardName)
 	{
 		this.resourcesGiven = resourcesGiven;
 		this.thresholdType = thresholdType;
     }
+
+	public override Card GetCardInstance()
+	{
+		return new ResourceCard(this);
+	}
 }

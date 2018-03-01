@@ -412,8 +412,6 @@ MonoBehaviour:
   parentCanvas: {fileID: 1167019308}
   cardRenderPrefab: {fileID: 1252220700500520, guid: 235779b4c194579489d931e636e1775d,
     type: 2}
-  faceDownCardRenderPrefab: {fileID: 1956934939007666, guid: 7c1586f4784ac6b48a6d755608f3ee88,
-    type: 2}
 --- !u!114 &937605320
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -433,7 +431,7 @@ MonoBehaviour:
   m_ChildAlignment: 4
   m_StartCorner: 0
   m_StartAxis: 0
-  m_CellSize: {x: 150, y: 150}
+  m_CellSize: {x: 120, y: 120}
   m_Spacing: {x: 30, y: 0}
   m_Constraint: 0
   m_ConstraintCount: 2
@@ -766,8 +764,8 @@ GameObject:
   - component: {fileID: 1642342710}
   - component: {fileID: 1642342712}
   - component: {fileID: 1642342711}
-  - component: {fileID: 1642342713}
   - component: {fileID: 1642342714}
+  - component: {fileID: 1642342713}
   m_Layer: 5
   m_Name: OpponentCardsArea
   m_TagString: Untagged
@@ -834,13 +832,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 1642342709}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9d7422f514d0d164c8963f268defb20d, type: 3}
+  m_Script: {fileID: 11500000, guid: b93c3e3539a35a64b9bda828a53ec5e8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  parentCanvas: {fileID: 1167019308}
-  cardRenderPrefab: {fileID: 1252220700500520, guid: 235779b4c194579489d931e636e1775d,
-    type: 2}
-  faceDownCardRenderPrefab: {fileID: 1956934939007666, guid: 7c1586f4784ac6b48a6d755608f3ee88,
+  cardRenderPrefab: {fileID: 1956934939007666, guid: 7c1586f4784ac6b48a6d755608f3ee88,
     type: 2}
 --- !u!114 &1642342714
 MonoBehaviour:

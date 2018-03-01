@@ -6,7 +6,7 @@ using UnityEngine;
 //can contain only one copy of any individual card
 public class Deck
 {
-	private SortedDictionary<Card, int> deck;
+	private SortedDictionary<int, int> deck;
 	private int minDeckSize;
 	private int maxDeckSize;
 	private int maxCopiesPerCard;
@@ -16,7 +16,7 @@ public class Deck
 	//initialize a deck with restrictions on copies per card and minimum/maximum deck size
 	public Deck(int minDeckSize = 60, int maxDeckSize = 120, int maxCopiesPerCard = 4)
 	{
-		deck = new SortedDictionary<Card, int>();
+		deck = new SortedDictionary<int, int>();
 		this.maxCopiesPerCard = maxCopiesPerCard;
 		this.minDeckSize = minDeckSize;
 		this.maxDeckSize = maxDeckSize;
@@ -24,69 +24,72 @@ public class Deck
     }
 
 	//add some number of a card to the deck
-	public void AddCard(Card card, int numberToAdd = 1)
+	public void AddCard(int cardID, int numberToAdd = 1)
 	{
 		if (numberToAdd <= 0)
 		{
-			Debug.Log("Tried to put a 0/negative number of a single card into the deck.");
+			Debug.LogError("Tried to put a 0/negative number of a single card into the deck.");
 			return;
 		}
 
-		if (deck.ContainsKey(card))
+		if (deck.ContainsKey(cardID))
 		{
-			if ((deck[card] + numberToAdd) > maxCopiesPerCard)
+			if ((deck[cardID] + numberToAdd) > maxCopiesPerCard)
 			{
-				Debug.Log("Putting that many cards in would go over the limit for a single card into the deck.");
+				Debug.LogError("Putting that many cards in would go over the limit for a single card into the deck.");
 				return;
 			}
 			else
 			{
-				deck[card] += numberToAdd;
+				deck[cardID] += numberToAdd;
 				cardCount += numberToAdd;
 			}
 		}
 		else
 		{
-			deck.Add(card, numberToAdd);
+			deck.Add(cardID, numberToAdd);
 			cardCount += numberToAdd;
         }
     }
 
 	//remove all copies of a card from the deck
-	public void RemoveCardCompletely(Card card)
+	public void RemoveCardCompletely(int cardID)
 	{
-		if (!deck.ContainsKey(card))
+		if (!deck.ContainsKey(cardID))
 		{
-			Debug.Log("Tried to remove a card from the deck that isn't in the deck.");
+			Debug.LogError("Tried to remove a card from the deck that isn't in the deck.");
 			return;
 		}
 		else
 		{
-			deck.Remove(card);
+			cardCount -= deck[cardID];
+            deck.Remove(cardID);
 		}
 	}
 
 	//tries to export the cards in this deck as an array
 	//returns true if the deck is in a valid state for exporting, and passes the array of cards into the out parameter
 	//return false if the deck is in an invalid state for exporting, and passes null into the out parameter
-	public bool ExportDeckToList(out List<Card> list)
+	public bool ExportDeckToArray(out int[] deckArray)
 	{
 		if (cardCount < minDeckSize || cardCount > maxDeckSize)
 		{
-			Debug.Log("Deck not in valid size range.");
-			list = null;
+			Debug.Log("Deck not in valid size range for export.");
+			deckArray = null;
 			return false;
 		}
 		else
 		{
-			list = new List<Card>();
+			deckArray = new int[cardCount];
+			int exportIndex = 0;
 
-			foreach (KeyValuePair<Card, int> kvp in deck)
+			foreach (KeyValuePair<int, int> kvp in this.deck)
 			{
 				for (int i = 0; i < kvp.Value; i++)
 				{
-					list.Add(kvp.Key);
-				}
+					deckArray[exportIndex] = kvp.Key;
+					exportIndex++;
+                }
 			}
 
 			return true;

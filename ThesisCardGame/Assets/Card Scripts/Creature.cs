@@ -5,7 +5,7 @@
 
 	private int damageMarked;
 
-	CreatureCard card;
+	CreatureCardDefinition card;
 
 	public Creature(int power, int toughness)
 	{
