@@ -10,8 +10,8 @@ public class OpponentHandRenderer : MonoBehaviour
 
 	private void InitializeCardSlots()
 	{
-		cardRenderObjects = new GameObject[TCGPlayer.MAX_HAND_SIZE];
-		for (int i = 0; i < TCGPlayer.MAX_HAND_SIZE; i++)
+		cardRenderObjects = new GameObject[ClientSideGameManager.MAX_HAND_SIZE];
+		for (int i = 0; i < ClientSideGameManager.MAX_HAND_SIZE; i++)
 		{
 			GameObject newCardRenderer = Instantiate(cardRenderPrefab);
 			newCardRenderer.transform.SetParent(this.gameObject.transform);
@@ -27,8 +27,8 @@ public class OpponentHandRenderer : MonoBehaviour
 			InitializeCardSlots();
 		}
 
-		Debug.Log("Rendering cards.");
-		for (int i = 0; i < TCGPlayer.MAX_HAND_SIZE; i++)
+		Debug.Log("Rendering " + handCount.ToString() + " cards for enemy.");
+		for (int i = 0; i < ClientSideGameManager.MAX_HAND_SIZE; i++)
 		{
 			GameObject cardRenderObject = cardRenderObjects[i];
 

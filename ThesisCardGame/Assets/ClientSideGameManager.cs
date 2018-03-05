@@ -3,16 +3,37 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
+using UnityEngine.UI;
 
 public class ClientSideGameManager : MonoBehaviour
 {
-	public GameObject playerPrefab;
-	public TCGPlayer localPlayer;
-	public TCGPlayer opponentPlayer;
+	public const int STARTING_HAND_SIZE = 6;
+	public const int MAX_HAND_SIZE = 8;
+	public const int MAX_MAX_RESOURCES_PER_TURN = 12;
+	public const int STARTING_MAX_RESOURCES_PER_TURN = 2;
+
+	public GameObject offlinePlayerPrefab;
+
+	private bool multiplayerGame;
+
+	public ICardGamePlayer localPlayer;
+	public ICardGamePlayer opponentPlayer;
+
 	public PlayerHandRenderer localHandRenderer;
 	public OpponentHandRenderer opponentHandRenderer;
 	public ResourcesRenderer localResourcesRenderer;
 	public ResourcesRenderer opponentResourcesRenderer;
+
+	public static System.Random rand = new System.Random();
+
+	public Button endTurnButton;
+
+	public static event AITurnBegins aiTurnBegins;
+	public delegate void AITurnBegins(ClientSideGameManager gameManager);
+
+	//0 = host of game, or single player in SP
+	//1 = client to game, or AI oppponent in SP
+	public int currentTurn;
 
 	private void Start ()
 	{
@@ -26,20 +47,35 @@ public class ClientSideGameManager : MonoBehaviour
 		//otherwise, create a player to play the game, and an AI to face them
 		else
 		{
-			GameObject localPlayerObject = Instantiate(playerPrefab);
-            localPlayer = localPlayerObject.GetComponent<TCGPlayer>();
+			GameObject singlePlayerObject = Instantiate(offlinePlayerPrefab);
+			localPlayer = singlePlayerObject.GetComponent<OfflineTCGPlayer>();
 
-			GameObject aiOpponentObject = Instantiate(playerPrefab);
-			opponentPlayer = aiOpponentObject.GetComponent<TCGPlayer>();
-			InitializeLocalGame(false);
+			GameObject aiOpponentObject = Instantiate(offlinePlayerPrefab);
+			opponentPlayer = aiOpponentObject.GetComponent<OfflineTCGPlayer>();
+
+			multiplayerGame = false;
+			InitializeLocalGame();
 		}
     }
+
+	private void Update()
+	{
+		if (Input.GetKeyUp(KeyCode.R) && localPlayer != null)
+		{
+			localPlayer.ResetResources();
+		}
+
+		if (Input.GetKeyUp(KeyCode.D) && localPlayer != null)
+		{
+			localPlayer.DrawCard();
+		}
+	}
 
 	private IEnumerator CheckForPlayersLoaded()
 	{
 		for (;;)
 		{
-			TCGPlayer[] players = GameObject.FindObjectsOfType<TCGPlayer>();
+			OnlineTCGPlayer[] players = GameObject.FindObjectsOfType<OnlineTCGPlayer>();
 			if (players.Length == 2)
 			{
 				if (players[0].gameObject.GetComponent<NetworkIdentity>().isLocalPlayer)
@@ -53,7 +89,9 @@ public class ClientSideGameManager : MonoBehaviour
 					opponentPlayer = players[0];
 				}
 
-				InitializeLocalGame(true);
+				multiplayerGame = true;
+				InitializeLocalGame();
+
 				break;
 			}
 			else
@@ -63,26 +101,30 @@ public class ClientSideGameManager : MonoBehaviour
 		}
 	}
 
-	private void InitializeLocalGame(bool isMultiplayer)
+	private void InitializeLocalGame()
 	{
 		Debug.Log("Beginning the game.");
 
 		//define all game cards
-		CardDefinition card00 = new ResourceCardDefinition("Resource 1", 1, 1);
-        CardDefinition card01 = new CreatureCardDefinition("Creature 1", 2, 2, 2);
-		CardDefinition card02 = new CreatureCardDefinition("Creature 2", 4, 3, 4);
-		CardDefinition card03 = new SpellCardDefinition("Spell 1", 1);
-		CardDefinition card04 = new SpellCardDefinition("Spell 2", 2);
-		CardDefinition card05 = new SpellCardDefinition("Spell 3", 3);
+		new ResourceCardDefinition("Resource 1", 1, 1);
+		new ResourceCardDefinition("Resource 2", 1, 2);
+		new CreatureCardDefinition("Creature 1", 2, "Flight", 2, 2);
+		new CreatureCardDefinition("Creature 2", 4, "Overrun", 3, 4);
+		new CreatureCardDefinition("Creature 3", 3, "Speed", 2, 3);
+		new SpellCardDefinition("Spell 1",  1, "Destroy target creature.");
+		new SpellCardDefinition("Spell 2", 2, "You gain 4 life.");
+		new SpellCardDefinition("Spell 3", 3, "Target opponent loses 4 life.");
 
-		Deck hardcodedDeck = new Deck(5, 8, 4);
+		Deck hardcodedDeck = new Deck(30, 60, 4);
 
-		hardcodedDeck.AddCard(0, 1);
-		hardcodedDeck.AddCard(1, 1);
-		hardcodedDeck.AddCard(2, 1);
-		hardcodedDeck.AddCard(3, 1);
-		hardcodedDeck.AddCard(4, 1);
-		hardcodedDeck.AddCard(5, 1);
+		hardcodedDeck.AddCard(0, 4);
+		hardcodedDeck.AddCard(1, 4);
+		hardcodedDeck.AddCard(2, 4);
+		hardcodedDeck.AddCard(3, 4);
+		hardcodedDeck.AddCard(4, 4);
+		hardcodedDeck.AddCard(5, 4);
+		hardcodedDeck.AddCard(6, 4);
+		hardcodedDeck.AddCard(7, 4);
 
 		int[] cardList;
 
@@ -90,19 +132,24 @@ public class ClientSideGameManager : MonoBehaviour
 		{
 			Debug.LogError("Can't export hardcoded deck.");
 			Application.Quit();
+			return;
 		}
 
-		localPlayer.Library = new Library(cardList);
-		localPlayer.InitializeLocalPlayer(this);
+		Library localLibrary = new Library(cardList);
 
-		if (isMultiplayer)
+        if (multiplayerGame)
 		{
-			opponentPlayer.InitializeMultiplayerOpponent(this);
+			localPlayer.SetLibrary(localLibrary);
+			localPlayer.InitializePlayer(this, false);
+			opponentPlayer.InitializePlayer(this, true);
 		}
 		else
 		{
-			opponentPlayer.Library = new Library(cardList);
-			opponentPlayer.InitializeSinglePlayer(this);
+			localPlayer.SetLibrary(localLibrary);
+            localPlayer.InitializePlayer(this, false);
+
+			opponentPlayer.SetLibrary(new Library(cardList));
+            opponentPlayer.InitializePlayer(this, true);
 		}
 
 		UpdateUI();
@@ -116,13 +163,13 @@ public class ClientSideGameManager : MonoBehaviour
 
 	public void UpdateCardShowingUI()
 	{
-		if (localHandRenderer == null || localPlayer == null || localPlayer.Hand == null)
+		if (localHandRenderer == null || localPlayer == null || localPlayer.GetHand() == null)
 		{
 			Debug.LogError("Unable to update card showing UI for local player.");
 		}
 		else
 		{
-			localHandRenderer.RenderCards(localPlayer.Hand);
+			localHandRenderer.RenderCards(localPlayer.GetHand());
 		}
 
 		if (opponentHandRenderer == null || opponentPlayer == null)
@@ -131,7 +178,7 @@ public class ClientSideGameManager : MonoBehaviour
 		}
 		else
 		{
-			opponentHandRenderer.RenderCards(opponentPlayer.HandCount);
+			opponentHandRenderer.RenderCards(opponentPlayer.GetHandCount());
 		}
 	}
 
@@ -143,7 +190,7 @@ public class ClientSideGameManager : MonoBehaviour
 		}
 		else
 		{
-			localResourcesRenderer.RenderResources(localPlayer.MaxResourcesPerTurn, localPlayer.CurrentResources);
+			localResourcesRenderer.RenderResources(localPlayer.GetResourcesPerTurn(), localPlayer.GetCurrentResources());
         }
 
 		if (localResourcesRenderer == null || opponentPlayer == null)
@@ -152,12 +199,39 @@ public class ClientSideGameManager : MonoBehaviour
 		}
 		else
 		{
-			opponentResourcesRenderer.RenderResources(opponentPlayer.MaxResourcesPerTurn, opponentPlayer.CurrentResources);
+			opponentResourcesRenderer.RenderResources(opponentPlayer.GetResourcesPerTurn(), opponentPlayer.GetCurrentResources());
 		}
 	}
 
-	public void TryPlayCard(Card card)
+	public bool TryPlayCard(Card card)
 	{
-		localPlayer.TryPlayCard(card.BaseDefinition);
+		return localPlayer.TryPlayCard(card);
+	}
+
+	public void TryEndTurn()
+	{
+		if (multiplayerGame)
+		{
+			//TODO
+		}
+		else
+		{
+			if (currentTurn == 0)
+			{
+				currentTurn = 1;
+				endTurnButton.interactable = false;
+				localHandRenderer.SetCardsDraggable(false);
+
+				aiTurnBegins(this);
+            }
+			else
+			{
+				currentTurn = 0;
+				endTurnButton.interactable = true;
+				localHandRenderer.SetCardsDraggable(true);
+
+				localPlayer.StartTurn();
+			}
+        }
 	}
 }

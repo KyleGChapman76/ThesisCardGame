@@ -13,8 +13,17 @@ public class Library
 		for (int i = 0; i < arrayOfCardDefIDs.Length; i++)
 		{
 			CardDefinition definition = CardDefinition.GetCardDefinitionWithID(arrayOfCardDefIDs[i]);
-			Card instance = definition.GetCardInstance();
-            cards.Add(instance);
+
+			if (definition == null)
+			{
+				Debug.LogError("Can't finish constructing library. Given array to construct contains invalud IDs.");
+				continue;
+			}
+			else
+			{
+				Card instance = definition.GetCardInstance();
+				cards.Add(instance);
+			}
         }
 	}
 

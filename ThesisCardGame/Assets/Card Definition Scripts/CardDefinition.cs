@@ -64,6 +64,12 @@ public abstract class CardDefinition : IComparable
 
 	public static CardDefinition GetCardDefinitionWithID(int id)
 	{
+		if (id < 0 || id >= CardDefinition.listOfCardDefinitions.Count)
+		{
+			Debug.LogError("Invalid card definition ID.");
+			return null;
+		}
+
 		if (CardDefinition.listOfCardDefinitions[id].CardID == id)
 		{
 			return CardDefinition.listOfCardDefinitions[id];

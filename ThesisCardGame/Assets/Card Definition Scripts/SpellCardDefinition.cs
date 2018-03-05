@@ -11,10 +11,20 @@ public class SpellCardDefinition : CardDefinition
 	}
 	protected int manaCost;
 
-	public SpellCardDefinition(string cardName, int manaCost) : base(cardName)
+	public string CardText
+	{
+		get
+		{
+			return cardText;
+		}
+	}
+	protected string cardText;
+
+	public SpellCardDefinition(string cardName, int manaCost, string cardText) : base(cardName)
 	{
 		this.manaCost = manaCost;
-	}
+		this.cardText = cardText;
+    }
 
 	public override Card GetCardInstance()
 	{

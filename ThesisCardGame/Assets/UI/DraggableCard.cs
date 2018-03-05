@@ -23,6 +23,8 @@ public class DraggableCard : MonoBehaviour, IBeginDragHandler, IDragHandler, IEn
 	public Text cardText;
 	public Text cardCost;
 
+	private int formerSiblingIndex = -1;
+
 	public void Start()
 	{
 		mainCamera = GameObject.FindGameObjectWithTag("MainCamera").GetComponent<Camera>();
@@ -38,14 +40,17 @@ public class DraggableCard : MonoBehaviour, IBeginDragHandler, IDragHandler, IEn
 			Debug.LogError("Can't update card display when this draggable card has no reference to a card.");
 		}
 		cardName.text = cardThisRenders.BaseDefinition.CardName;
-		cardText.text = "Not implemented yet.";
-		cardCost.text = (cardThisRenders is SpellCard) ? (((SpellCard)cardThisRenders).BaseDefinition.CardName).ToString() : "";
+		cardText.text = (cardThisRenders is SpellCard) ? (((SpellCard)cardThisRenders).BaseDefinition.CardText).ToString() : "";
+		cardCost.text = (cardThisRenders is SpellCard) ? (((SpellCard)cardThisRenders).BaseDefinition.ManaCost).ToString() : "";
+		GetComponent<Image>().enabled = true;
     }
 
 	public void OnBeginDrag(PointerEventData eventData)
 	{
+		Debug.Log("Card is began being dragged.");
 		cardBeingDragged = this;
-		thisRectTransform.SetParent(canvas.transform);
+		formerSiblingIndex = thisRectTransform.GetSiblingIndex();
+        thisRectTransform.SetParent(canvas.transform);
 		thiscanvasGroup.blocksRaycasts = false;
 	}
 
@@ -61,13 +66,30 @@ public class DraggableCard : MonoBehaviour, IBeginDragHandler, IDragHandler, IEn
 
 	public void OnEndDrag(PointerEventData eventData)
 	{
+		Debug.Log("Card is stopped being dragged.");
 		thisRectTransform.SetParent(playerUIArea.transform);
-		thiscanvasGroup.blocksRaycasts = true;
-	}
+		thisRectTransform.SetSiblingIndex(formerSiblingIndex);
+        thiscanvasGroup.blocksRaycasts = true;
+
+		cardBeingDragged = null;
+    }
 
 	public void CardDroppedInPlayArea()
 	{
-		tcgGameManager.TryPlayCard(cardThisRenders);
-		cardBeingDragged = null;
+		GetComponent<Image>().enabled = false;
+		StartCoroutine("PlayCardOnceMovedBackSafely");
+	}
+
+	private IEnumerator PlayCardOnceMovedBackSafely()
+	{
+		while (cardBeingDragged)
+		{
+			yield return null;
+		}
+
+		if (!tcgGameManager.TryPlayCard(cardThisRenders))
+		{
+			GetComponent<Image>().enabled = true;
+		}
 	}
 }

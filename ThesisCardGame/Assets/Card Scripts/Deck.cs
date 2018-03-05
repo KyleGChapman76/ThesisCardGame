@@ -74,7 +74,7 @@ public class Deck
 	{
 		if (cardCount < minDeckSize || cardCount > maxDeckSize)
 		{
-			Debug.Log("Deck not in valid size range for export.");
+			Debug.Log("Deck not in valid size range for export. Is size " + cardCount + " and needs to be within " + minDeckSize + " to " + maxDeckSize + ".");
 			deckArray = null;
 			return false;
 		}

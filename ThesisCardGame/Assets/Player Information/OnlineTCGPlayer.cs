@@ -1,61 +1,20 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
 
 //class storing and communicating information about the player's status
 //including life total, their library, and their hand
-public class TCGPlayer : NetworkBehaviour
+public class OnlineTCGPlayer : NetworkBehaviour, ICardGamePlayer
 {
-	//library management
-	public const int STARTING_HAND_SIZE = 6;
-	public const int MAX_HAND_SIZE = 8;
-	public const int MAX_MAX_RESOURCES_PER_TURN = 12;
-	public const int STARTING_MAX_RESOURCES_PER_TURN = 2;
-
-	public Library Library
-	{
-		get
-		{
-			return library;
-		}
-		set
-		{
-			library = value;
-			Debug.Log("Setting player library.");
-        }
-	}
 	private Library library;
 
-	public List<Card> Hand
-	{
-		get
-		{
-			if (hand == null)
-				return null;
-			return hand;
-		}
-	}
 	private List<Card> hand;
 
-	public int HandCount
-	{
-		get
-		{
-			return handCount;
-        }
-	}
 	[SyncVar(hook = "HandCountChanged")]
 	private int handCount;
 
-	//resources mangement
-	public int MaxResourcesPerTurn
-	{
-		get
-		{
-			return maxResourcesPerTurn;
-		}
-	}
 	[SyncVar(hook = "MaxResourcesPerTurnChanged")]
 	private int maxResourcesPerTurn;
 
@@ -69,46 +28,94 @@ public class TCGPlayer : NetworkBehaviour
 	[SyncVar(hook = "CurrentResourcesChanged")]
 	private int currentResources;
 
-	private bool multiplayerGame;
+	private bool hasPlayedAResourceThisTurn;
+
 	private ClientSideGameManager clientGameManager;
 
-	public void Update()
-	{
-		if (!multiplayerGame || isLocalPlayer)
-		{
-			if (Input.GetKeyUp(KeyCode.R))
-			{
-				Debug.Log("Resetting resources.");
+	/*** Getters and Setters ***/
 
-				if (multiplayerGame)
-				{
-					CmdPlayerResetsResources(isLocalPlayer ? 0 : 1);
-				}
-				else
-				{
-					currentResources = maxResourcesPerTurn;
-					clientGameManager.UpdateUI();
-				}
-			}
+	public void SetLibrary(Library library)
+	{
+		this.library = library;
+	}
+
+	public Library GetLibrary()
+	{
+		return library;
+	}
+
+	public int GetCurrentResources()
+	{
+		return currentResources;
+	}
+
+	public int GetResourcesPerTurn()
+	{
+		return maxResourcesPerTurn;
+	}
+
+	public List<Card> GetHand()
+	{
+		return hand;
+	}
+
+	public int GetHandCount()
+	{
+		return handCount;
+	}
+
+	public void DrawCard()
+	{
+		Debug.Log("Player drawing card.");
+
+		if (handCount >= ClientSideGameManager.MAX_HAND_SIZE)
+		{
+			Debug.Log("Can't draw a card, due to maximum hand size.");
+			return;
+		}
+
+		Card cardDrawn;
+		if (library.DrawCard(out cardDrawn))
+		{
+			hand.Add(cardDrawn);
+			handCount++;
+			clientGameManager.UpdateUI();
+		}
+		else
+		{
+			Debug.LogError("Could not draw card from library.");
 		}
 	}
 
-	public void InitializeSinglePlayer(ClientSideGameManager clientSide)
+	public void ResetResources()
 	{
-		Debug.Log("Initializing single player.");
-
-		hand = new List<Card>();
-		DrawLocalHand();
-
-		maxResourcesPerTurn = STARTING_MAX_RESOURCES_PER_TURN;
+		Debug.Log("Resetting resources.");
 		currentResources = maxResourcesPerTurn;
-
-		multiplayerGame = false;
-
-		clientGameManager = clientSide;
+		clientGameManager.UpdateUI();
 	}
 
-	public void InitializeLocalPlayer(ClientSideGameManager clientSide)
+	public void StartTurn()
+	{
+		hasPlayedAResourceThisTurn = false;
+		ResetResources();
+		DrawCard();
+	}
+
+	/*** Initialization Functions ***/
+
+	public void InitializePlayer(ClientSideGameManager clientSide, bool isOpponent)
+	{
+		if (isOpponent)
+		{
+			InitializeMultiplayerOpponent(clientSide);
+		}
+		else
+		{
+			InitializeLocalPlayer(clientSide);
+		}
+	}
+
+	private void InitializeLocalPlayer(ClientSideGameManager clientSide)
 	{
 		Debug.Log("Initializing player on " + (isServer ? " server." : " client."));
 
@@ -117,23 +124,22 @@ public class TCGPlayer : NetworkBehaviour
 
 		if (isServer)
 		{
-			maxResourcesPerTurn = STARTING_MAX_RESOURCES_PER_TURN;
+			maxResourcesPerTurn = ClientSideGameManager.STARTING_MAX_RESOURCES_PER_TURN;
 			currentResources = maxResourcesPerTurn;
 		}
-
-		multiplayerGame = GameObject.FindObjectOfType<NetworkManager>() != null;
 
 		clientGameManager = clientSide;
     }
 
-	public void InitializeMultiplayerOpponent(ClientSideGameManager clientSide)
+	private void InitializeMultiplayerOpponent(ClientSideGameManager clientSide)
 	{
-		multiplayerGame = GameObject.FindObjectOfType<NetworkManager>() != null;
+		Debug.Log("Initializing opponent on " + (isServer ? " server." : " client."));
+
 		clientGameManager = clientSide;
 
 		if (isServer)
 		{
-			maxResourcesPerTurn = STARTING_MAX_RESOURCES_PER_TURN;
+			maxResourcesPerTurn = ClientSideGameManager.STARTING_MAX_RESOURCES_PER_TURN;
 			currentResources = maxResourcesPerTurn;
 		}
     }
@@ -142,7 +148,7 @@ public class TCGPlayer : NetworkBehaviour
 	{
 		Debug.Log("Drawing hand for player.");
 
-		int handSize = STARTING_HAND_SIZE;
+		int handSize = ClientSideGameManager.STARTING_HAND_SIZE;
 		if (hand.Count > 0)
 		{
 			handSize = hand.Count - 1;
@@ -160,93 +166,64 @@ public class TCGPlayer : NetworkBehaviour
 			}
 		}
 
-		if (multiplayerGame && !isServer)
-		{
-			CmdAnnounceHandSize(hand.Count, 1);
-		}
-		else
+		if (isServer)
 		{
 			handCount = hand.Count;
 		}
-	}
-
-	private void CurrentResourcesChanged(int value)
-	{
-		currentResources = value;
-        Debug.Log("CURRENT RESOURCES HOOK: " + value);
-		if (clientGameManager != null)
+		else
 		{
-			clientGameManager.UpdatePlayerResourcesUI();
+			CmdAnnounceHandSize(hand.Count, 1);
 		}
 	}
 
-	private void MaxResourcesPerTurnChanged(int value)
+	public bool TryPlayCard(Card card)
 	{
-		maxResourcesPerTurn = value;
-		Debug.Log("MAX RESOURCES HOOK: " + value);
-		if (clientGameManager != null)
-		{
-			clientGameManager.UpdatePlayerResourcesUI();
-		}
-	}
-
-	private void HandCountChanged(int value)
-	{
-		handCount = value;
-		Debug.Log("HAND COUNT HOOK: " + value);
-		if (clientGameManager != null)
-		{
-			clientGameManager.UpdateCardShowingUI();
-		}
+		//TODO
+		return false;
 	}
 
 	//client side logic
-	public void TryPlayCard(CardDefinition card)
+	public bool TryPlayCard(CardDefinition card)
 	{
 		if (card == null)
 		{
 			Debug.Log("Can't play a null card.");
-			return;
+			return false;
 		}
 
-		if (multiplayerGame)
+		bool cardPlayValid = false;
+		if (card is ResourceCardDefinition)
 		{
-			bool cardPlayValid = false;
-			if (card is ResourceCardDefinition)
+			//TODO check if the player can play a resource card this turn
+			cardPlayValid = true;
+		}
+		else if (card is SpellCardDefinition)
+		{
+			SpellCardDefinition spellCard = (SpellCardDefinition)card;
+			if (spellCard.ManaCost > currentResources)
 			{
-				//TODO check if the player can play a resource card this turn
+				Debug.Log("Not enough resources (current = " + currentResources.ToString() + ") to cast that spell with cost: " + spellCard.ManaCost.ToString());
+			}
+			else
+			{
 				cardPlayValid = true;
-            }
-			else if (card is SpellCardDefinition)
-			{
-				SpellCardDefinition spellCard = (SpellCardDefinition)card;
-				if (spellCard.ManaCost > currentResources)
-				{
-					Debug.Log("Not enough resources (current = " + currentResources.ToString() + ") to cast that spell with cost: " + spellCard.ManaCost.ToString());
-				}
-				else
-				{
-					cardPlayValid = true;
-                }
 			}
+		}
 
-			if (cardPlayValid)
+		if (cardPlayValid)
+		{
+			if (isServer)
 			{
-				if (isServer)
-				{
-					RpcPlayerPlaysCard(card.CardID, 0);
-				}
-				else
-				{
-					CmdPlayerPlaysCard(card.CardID, 1);
-				}
+				RpcPlayerPlaysCard(card.CardID, 0);
+			}
+			else
+			{
+				CmdPlayerPlaysCard(card.CardID, 1);
 			}
 		}
-		else
-		{
-			PlayCard(card, 0);
-		}
-    }
+
+		return true;
+	}
 
 	//server side checking and implementation
 	private void PlayCard(CardDefinition card, int playerNum)
@@ -285,6 +262,8 @@ public class TCGPlayer : NetworkBehaviour
 		clientGameManager.UpdateUI();
 	}
 
+	/*** RPCs and Commands ***/
+
 	//server tells the client that a card of a certain ID has been played
 	[ClientRpc]
 	private void RpcPlayerPlaysCard(int cardID, int playerNum)
@@ -318,5 +297,37 @@ public class TCGPlayer : NetworkBehaviour
 	{
 		Debug.Log("Player " + playerNum + " hand size became " + handSize);
 		handCount = handSize;
+	}
+
+	/*** SyncVar Hooks ***/
+
+	private void CurrentResourcesChanged(int value)
+	{
+		currentResources = value;
+		Debug.Log("CURRENT RESOURCES HOOK: " + value);
+		if (clientGameManager != null)
+		{
+			clientGameManager.UpdatePlayerResourcesUI();
+		}
+	}
+
+	private void MaxResourcesPerTurnChanged(int value)
+	{
+		maxResourcesPerTurn = value;
+		Debug.Log("MAX RESOURCES HOOK: " + value);
+		if (clientGameManager != null)
+		{
+			clientGameManager.UpdatePlayerResourcesUI();
+		}
+	}
+
+	private void HandCountChanged(int value)
+	{
+		handCount = value;
+		Debug.Log("HAND COUNT HOOK: " + value);
+		if (clientGameManager != null)
+		{
+			clientGameManager.UpdateCardShowingUI();
+		}
 	}
 }

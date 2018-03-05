@@ -18,7 +18,7 @@
 	}
 	protected int toughness;
 
-	public CreatureCardDefinition(string cardName, int manaCost, int power, int toughness) : base(cardName, manaCost)
+	public CreatureCardDefinition(string cardName, int manaCost, string cardText, int power, int toughness) : base(cardName, manaCost, cardText)
 	{
 		this.power = power;
 		this.toughness = toughness;
