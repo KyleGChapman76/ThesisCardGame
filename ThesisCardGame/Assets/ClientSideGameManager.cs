@@ -31,11 +31,11 @@ public class ClientSideGameManager : MonoBehaviour
 	public static event AITurnBegins aiTurnBegins;
 	public delegate void AITurnBegins(ClientSideGameManager gameManager);
 
-	//0 = host of game, or single player in SP
-	//1 = client to game, or AI oppponent in SP
+	//0 = local player, or single player in SP
+	//1 = opponent player, or AI oppponent in SP
 	public int currentTurn;
 
-	private void Start ()
+	private void Start()
 	{
 		Debug.Log("GameManager began.");
 
@@ -56,7 +56,7 @@ public class ClientSideGameManager : MonoBehaviour
 			multiplayerGame = false;
 			InitializeLocalGame();
 		}
-    }
+	}
 
 	private void Update()
 	{
@@ -111,7 +111,7 @@ public class ClientSideGameManager : MonoBehaviour
 		new CreatureCardDefinition("Creature 1", 2, "Flight", 2, 2);
 		new CreatureCardDefinition("Creature 2", 4, "Overrun", 3, 4);
 		new CreatureCardDefinition("Creature 3", 3, "Speed", 2, 3);
-		new SpellCardDefinition("Spell 1",  1, "Destroy target creature.");
+		new SpellCardDefinition("Spell 1", 1, "Destroy target creature.");
 		new SpellCardDefinition("Spell 2", 2, "You gain 4 life.");
 		new SpellCardDefinition("Spell 3", 3, "Target opponent loses 4 life.");
 
@@ -137,7 +137,7 @@ public class ClientSideGameManager : MonoBehaviour
 
 		Library localLibrary = new Library(cardList);
 
-        if (multiplayerGame)
+		if (multiplayerGame)
 		{
 			localPlayer.SetLibrary(localLibrary);
 			localPlayer.InitializePlayer(this, false);
@@ -146,20 +146,20 @@ public class ClientSideGameManager : MonoBehaviour
 		else
 		{
 			localPlayer.SetLibrary(localLibrary);
-            localPlayer.InitializePlayer(this, false);
+			localPlayer.InitializePlayer(this, false);
 
 			opponentPlayer.SetLibrary(new Library(cardList));
-            opponentPlayer.InitializePlayer(this, true);
+			opponentPlayer.InitializePlayer(this, true);
 		}
 
 		UpdateUI();
-    }
+	}
 
 	public void UpdateUI()
 	{
 		UpdateCardShowingUI();
 		UpdatePlayerResourcesUI();
-    }
+	}
 
 	public void UpdateCardShowingUI()
 	{
@@ -191,7 +191,7 @@ public class ClientSideGameManager : MonoBehaviour
 		else
 		{
 			localResourcesRenderer.RenderResources(localPlayer.GetResourcesPerTurn(), localPlayer.GetCurrentResources());
-        }
+		}
 
 		if (localResourcesRenderer == null || opponentPlayer == null)
 		{
@@ -203,35 +203,100 @@ public class ClientSideGameManager : MonoBehaviour
 		}
 	}
 
+	//try to begin the process of playing a card from the client
 	public bool TryPlayCard(Card card)
 	{
 		return localPlayer.TryPlayCard(card);
 	}
 
+	public void TryBeginTurn()
+	{
+		if (multiplayerGame)
+		{
+			if (currentTurn == 0)
+			{
+				Debug.LogError("Client trying to begin turn when it is already the local players turn.");
+				return;
+			}
+
+			currentTurn = 0;
+			InitializeLocalTurnUI();
+		}
+		else
+		{
+			Debug.LogError("TryBeginTurn should never be ran in a singleplayer game.");
+            return;
+		}
+	}
+
+	//try to begin the process of ending the turn from the client
 	public void TryEndTurn()
 	{
 		if (multiplayerGame)
 		{
-			//TODO
+			if (currentTurn == 0)
+			{
+				if (localPlayer.TryEndTurn() && opponentPlayer.TryStartTurn())
+				{
+					currentTurn = 1;
+					InitializeOpponentTurnUI();
+                }
+			}
+			else
+			{
+				Debug.LogError("Client trying to end turn when it isn't the local players turn.");
+				return;
+			}
 		}
 		else
 		{
 			if (currentTurn == 0)
 			{
-				currentTurn = 1;
-				endTurnButton.interactable = false;
-				localHandRenderer.SetCardsDraggable(false);
-
-				aiTurnBegins(this);
-            }
+				if (localPlayer.TryEndTurn())
+				{
+					currentTurn = 1;
+					InitializeAITurnUI();
+					aiTurnBegins(this);
+				}
+			}
 			else
 			{
-				currentTurn = 0;
-				endTurnButton.interactable = true;
-				localHandRenderer.SetCardsDraggable(true);
-
-				localPlayer.StartTurn();
+				if (localPlayer.TryStartTurn())
+				{
+					currentTurn = 0;
+					InitializeSingleTurnUI();
+				}
 			}
         }
+	}
+
+	/*** Initializing Turns ***/
+
+	public void InitializeLocalTurnUI()
+	{
+		Debug.Log("Initializing UI for a local turn.");
+		endTurnButton.interactable = true;
+		localHandRenderer.cardsDraggable = true;
+	}
+
+	public void InitializeOpponentTurnUI()
+	{
+		Debug.Log("Initializing UI for the opponents turn.");
+		endTurnButton.interactable = false;
+		localHandRenderer.cardsDraggable = false;
+	}
+
+	public void InitializeSingleTurnUI()
+	{
+		Debug.Log("Initializing UI for a singleplayer turn.");
+		endTurnButton.interactable = true;
+		localHandRenderer.cardsDraggable = true;
+	}
+
+	public void InitializeAITurnUI()
+	{
+		Debug.Log("Initializing UI foran AI controlled turn.");
+		endTurnButton.interactable = false;
+		localHandRenderer.cardsDraggable = false;
 	}
 }

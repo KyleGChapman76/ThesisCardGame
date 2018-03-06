@@ -28,9 +28,13 @@ public class OnlineTCGPlayer : NetworkBehaviour, ICardGamePlayer
 	[SyncVar(hook = "CurrentResourcesChanged")]
 	private int currentResources;
 
+	[SyncVar]
 	private bool hasPlayedAResourceThisTurn;
 
 	private ClientSideGameManager clientGameManager;
+
+	[SyncVar(hook = "IsMyTurnChanged")]
+	private bool isMyTurn;
 
 	/*** Getters and Setters ***/
 
@@ -94,17 +98,78 @@ public class OnlineTCGPlayer : NetworkBehaviour, ICardGamePlayer
 		clientGameManager.UpdateUI();
 	}
 
-	public void StartTurn()
+	/*** Turn Structure Functions ***/
+
+	public bool TryStartTurn()
 	{
+		if (isMyTurn)
+		{
+			Debug.LogError("Player trying to begin turn when it is already their turn.");
+			return false;
+		}
+
+		//if on server, do server side turn code directly
+		if (isServer)
+		{
+			ServerSideStartTurn();
+		}
+		//if not on the server, 
+		else
+		{
+			CmdTurnChanged(true);
+		}
+		return true;
+	}
+
+	private void ServerSideStartTurn()
+	{
+		if (!isServer)
+		{
+			Debug.LogError("Server side start turn ran on client!");
+			return;
+		}
+
 		hasPlayedAResourceThisTurn = false;
 		ResetResources();
 		DrawCard();
+	}
+
+	public bool TryEndTurn()
+	{
+		if (!isMyTurn)
+		{
+			Debug.LogError("Player trying to end turn when it isn't their turn.");
+			return false;
+		}
+
+		//if on server, do server side turn code directly
+		if (isServer)
+		{
+			ServerSideEndTurn();
+        }
+		//if not on the server, 
+		else
+		{
+			CmdTurnChanged(false);
+		}
+
+		return true;
+	}
+
+	private void ServerSideEndTurn()
+	{
+		if (!isServer)
+		{
+			Debug.LogError("Server side start turn ran on client!");
+			return;
+		}
 	}
 
 	/*** Initialization Functions ***/
 
 	public void InitializePlayer(ClientSideGameManager clientSide, bool isOpponent)
 	{
+		clientGameManager = clientSide;
 		if (isOpponent)
 		{
 			InitializeMultiplayerOpponent(clientSide);
@@ -117,7 +182,7 @@ public class OnlineTCGPlayer : NetworkBehaviour, ICardGamePlayer
 
 	private void InitializeLocalPlayer(ClientSideGameManager clientSide)
 	{
-		Debug.Log("Initializing player on " + (isServer ? " server." : " client."));
+		Debug.Log("Initializing local player on " + (isServer ? " server." : " client."));
 
 		hand = new List<Card>();
 		DrawLocalHand();
@@ -126,21 +191,24 @@ public class OnlineTCGPlayer : NetworkBehaviour, ICardGamePlayer
 		{
 			maxResourcesPerTurn = ClientSideGameManager.STARTING_MAX_RESOURCES_PER_TURN;
 			currentResources = maxResourcesPerTurn;
+			clientSide.InitializeLocalTurnUI();
+			isMyTurn = true;
+        }
+		else
+		{
+			clientSide.InitializeOpponentTurnUI();
 		}
-
-		clientGameManager = clientSide;
     }
 
 	private void InitializeMultiplayerOpponent(ClientSideGameManager clientSide)
 	{
 		Debug.Log("Initializing opponent on " + (isServer ? " server." : " client."));
 
-		clientGameManager = clientSide;
-
 		if (isServer)
 		{
 			maxResourcesPerTurn = ClientSideGameManager.STARTING_MAX_RESOURCES_PER_TURN;
 			currentResources = maxResourcesPerTurn;
+			isMyTurn = false;
 		}
     }
 
@@ -178,61 +246,63 @@ public class OnlineTCGPlayer : NetworkBehaviour, ICardGamePlayer
 
 	public bool TryPlayCard(Card card)
 	{
-		//TODO
-		return false;
-	}
-
-	//client side logic
-	public bool TryPlayCard(CardDefinition card)
-	{
 		if (card == null)
 		{
 			Debug.Log("Can't play a null card.");
 			return false;
 		}
 
-		bool cardPlayValid = false;
-		if (card is ResourceCardDefinition)
+		if (!isMyTurn)
 		{
-			//TODO check if the player can play a resource card this turn
-			cardPlayValid = true;
+			Debug.Log("Can't play a card when its not your turn.");
+			return false;
 		}
-		else if (card is SpellCardDefinition)
+
+		if (card is ResourceCard)
 		{
-			SpellCardDefinition spellCard = (SpellCardDefinition)card;
-			if (spellCard.ManaCost > currentResources)
+			Debug.Log("Player playing a resource card.");
+
+			if (hasPlayedAResourceThisTurn)
 			{
-				Debug.Log("Not enough resources (current = " + currentResources.ToString() + ") to cast that spell with cost: " + spellCard.ManaCost.ToString());
+				Debug.Log("Player has already played a resource card this turn.");
+				return false;
 			}
-			else
+        }
+		else if (card is SpellCard)
+		{
+			SpellCard spellCard = (SpellCard)card;
+			if (spellCard.BaseDefinition.ManaCost > currentResources)
 			{
-				cardPlayValid = true;
+				Debug.Log("Not enough resources (current = " + currentResources.ToString() + ") to cast that spell with cost: " + spellCard.BaseDefinition.ManaCost.ToString());
+				return false;
 			}
 		}
 
-		if (cardPlayValid)
+		if (isServer)
 		{
-			if (isServer)
-			{
-				RpcPlayerPlaysCard(card.CardID, 0);
-			}
-			else
-			{
-				CmdPlayerPlaysCard(card.CardID, 1);
-			}
+			PlayCard(card.BaseDefinition, 0);
+			RpcPlayerPlaysCard(card.BaseDefinition.CardID, 0);
+		}
+		else
+		{
+			CmdPlayerPlaysCard(card.BaseDefinition.CardID, 1);
 		}
 
 		return true;
 	}
 
-	//server side checking and implementation
-	private void PlayCard(CardDefinition card, int playerNum)
+	//server side implementation
+	private bool PlayCard(CardDefinition card, int playerNum)
 	{
 		if (card is ResourceCardDefinition)
 		{
 			Debug.Log("Player " + playerNum + " playing a resource card.");
 
-			//TODO check if the player can play a resource card this turn
+			if (hasPlayedAResourceThisTurn)
+			{
+				Debug.Log("Player has already played a resource card this turn.");
+				return false;
+			}
 
 			maxResourcesPerTurn += ((ResourceCardDefinition)card).ResourcesGiven;
 		}
@@ -242,7 +312,7 @@ public class OnlineTCGPlayer : NetworkBehaviour, ICardGamePlayer
 			if (spellCard.ManaCost > currentResources)
 			{
 				Debug.Log("Player " + playerNum + " doesn't have enough resources (current = " + currentResources.ToString() + ") to cast that spell with cost: " + spellCard.ManaCost.ToString());
-				return;
+				return false;
 			}
 
 			currentResources -= spellCard.ManaCost;
@@ -259,7 +329,7 @@ public class OnlineTCGPlayer : NetworkBehaviour, ICardGamePlayer
 			}
 		}
 
-		clientGameManager.UpdateUI();
+		return true;
 	}
 
 	/*** RPCs and Commands ***/
@@ -279,11 +349,13 @@ public class OnlineTCGPlayer : NetworkBehaviour, ICardGamePlayer
 	private void CmdPlayerPlaysCard(int cardID, int playerNum)
 	{
 		CardDefinition card = CardDefinition.GetCardDefinitionWithID(cardID);
-		PlayCard(card, playerNum);
-		RpcPlayerPlaysCard(cardID, playerNum);
+		if (PlayCard(card, playerNum))
+		{
+			RpcPlayerPlaysCard(cardID, playerNum);
+		}
     }
 
-	//client tells the server that it has reset its resources
+	//client tells the server that it wants to reset its resources (DEBUG)
 	[Command]
 	private void CmdPlayerResetsResources(int playerNum)
 	{
@@ -297,6 +369,22 @@ public class OnlineTCGPlayer : NetworkBehaviour, ICardGamePlayer
 	{
 		Debug.Log("Player " + playerNum + " hand size became " + handSize);
 		handCount = handSize;
+	}
+
+	//client tells the server that it would like to change the turn
+	[Command]
+	private void CmdTurnChanged(bool turnBegan)
+	{
+		isMyTurn = turnBegan;
+
+		if (isMyTurn)
+		{
+			ServerSideStartTurn();
+		}
+		else
+		{
+			ServerSideEndTurn();
+		}
 	}
 
 	/*** SyncVar Hooks ***/
@@ -328,6 +416,17 @@ public class OnlineTCGPlayer : NetworkBehaviour, ICardGamePlayer
 		if (clientGameManager != null)
 		{
 			clientGameManager.UpdateCardShowingUI();
+		}
+	}
+
+	private void IsMyTurnChanged(bool value)
+	{
+		isMyTurn = value;
+		Debug.Log("MY TURN HOOK: " + value);
+
+		if (isMyTurn && localPlayerAuthority)
+		{
+			clientGameManager.TryBeginTurn();
 		}
 	}
 }

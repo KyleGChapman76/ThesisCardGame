@@ -18,7 +18,7 @@ public class AIOpponent : MonoBehaviour
 		Debug.Log("AI begins taking its turn.");
 
 		this.gameManager = gameManager;
-		tcgPlayer.StartTurn();
+		tcgPlayer.TryStartTurn();
 
 		StartCoroutine("EndTurnAfterFiveSeconds");
 	}

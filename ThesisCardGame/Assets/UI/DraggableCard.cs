@@ -47,7 +47,7 @@ public class DraggableCard : MonoBehaviour, IBeginDragHandler, IDragHandler, IEn
 
 	public void OnBeginDrag(PointerEventData eventData)
 	{
-		Debug.Log("Card is began being dragged.");
+		//Debug.Log("Card is began being dragged.");
 		cardBeingDragged = this;
 		formerSiblingIndex = thisRectTransform.GetSiblingIndex();
         thisRectTransform.SetParent(canvas.transform);
@@ -66,7 +66,7 @@ public class DraggableCard : MonoBehaviour, IBeginDragHandler, IDragHandler, IEn
 
 	public void OnEndDrag(PointerEventData eventData)
 	{
-		Debug.Log("Card is stopped being dragged.");
+		//Debug.Log("Card is stopped being dragged.");
 		thisRectTransform.SetParent(playerUIArea.transform);
 		thisRectTransform.SetSiblingIndex(formerSiblingIndex);
         thiscanvasGroup.blocksRaycasts = true;

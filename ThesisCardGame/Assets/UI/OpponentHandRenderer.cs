@@ -27,7 +27,7 @@ public class OpponentHandRenderer : MonoBehaviour
 			InitializeCardSlots();
 		}
 
-		Debug.Log("Rendering " + handCount.ToString() + " cards for enemy.");
+		//Debug.Log("Rendering " + handCount.ToString() + " cards for enemy.");
 		for (int i = 0; i < ClientSideGameManager.MAX_HAND_SIZE; i++)
 		{
 			GameObject cardRenderObject = cardRenderObjects[i];

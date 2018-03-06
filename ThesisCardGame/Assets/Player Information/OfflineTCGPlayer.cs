@@ -87,12 +87,22 @@ public class OfflineTCGPlayer : MonoBehaviour, ICardGamePlayer
 		clientGameManager.UpdateUI();
 	}
 
-	public void StartTurn()
+	/*** Turn Structure Functions ***/
+
+	public bool TryStartTurn()
 	{
 		hasPlayedAResourceThisTurn = false;
 		ResetResources();
 		DrawCard();
+
+		return true;
     }
+
+	public bool TryEndTurn()
+	{
+		//TODO
+		return true;
+	}
 
 	/*** Initialization Functions ***/
 
