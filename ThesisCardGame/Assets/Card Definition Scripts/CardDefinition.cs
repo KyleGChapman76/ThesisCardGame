@@ -25,15 +25,26 @@ public abstract class CardDefinition : IComparable
 	}
 	protected string cardName;
 
+	public int MaxCopiesInDeck
+	{
+		get
+		{
+			return maxCopiesInDeck;
+		}
+	}
+    protected int maxCopiesInDeck;
+
 	static CardDefinition()
 	{
 		listOfCardDefinitions = new List<CardDefinition>();
 	}
 
-	public CardDefinition(string cardName)
+	public CardDefinition(string cardName, int maxCopiesInDeck = 4)
 	{
 		cardID = currentMaxCardID++;
 		this.cardName = cardName;
+
+		this.maxCopiesInDeck = maxCopiesInDeck;
 
 		listOfCardDefinitions.Add(this);
     }

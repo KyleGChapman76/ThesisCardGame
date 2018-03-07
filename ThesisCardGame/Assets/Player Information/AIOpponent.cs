@@ -5,20 +5,19 @@ using UnityEngine;
 public class AIOpponent : MonoBehaviour
 {
 	private OfflineTCGPlayer tcgPlayer;
-	private ClientSideGameManager gameManager;
+	private GameUIManager uiManager;
 
 	private void Start()
 	{
-		ClientSideGameManager.aiTurnBegins += AITurnBegins;
+		LocalGameManager.aiTurnBegins += AITurnBegins;
 		tcgPlayer = GetComponent<OfflineTCGPlayer>();
     }
 
-    private void AITurnBegins(ClientSideGameManager gameManager)
+    private void AITurnBegins(GameUIManager gameManager)
 	{
 		Debug.Log("AI begins taking its turn.");
 
-		this.gameManager = gameManager;
-		tcgPlayer.TryStartTurn();
+		this.uiManager = gameManager;
 
 		StartCoroutine("EndTurnAfterFiveSeconds");
 	}
@@ -29,7 +28,7 @@ public class AIOpponent : MonoBehaviour
 
 		Debug.Log("AI ends its turn.");
 
-		gameManager.TryEndTurn();
+		uiManager.TryEndTurn();
     }
 
 }

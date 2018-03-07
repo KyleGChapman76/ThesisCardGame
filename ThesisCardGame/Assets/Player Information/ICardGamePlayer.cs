@@ -5,11 +5,6 @@ using System.Text;
 
 public interface ICardGamePlayer
 {
-	void InitializePlayer(ClientSideGameManager clientSide, bool isOpponent);
-
-	void SetLibrary(Library library);
-	Library GetLibrary();
-
 	int GetCurrentResources();
 	int GetResourcesPerTurn();
 	void ResetResources();

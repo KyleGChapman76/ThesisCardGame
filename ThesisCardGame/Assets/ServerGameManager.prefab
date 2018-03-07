@@ -9,68 +9,79 @@ Prefab:
     m_Modifications: []
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 0}
-  m_RootGameObject: {fileID: 1913585319145362}
+  m_RootGameObject: {fileID: 1742294883868158}
   m_IsPrefabParent: 1
---- !u!1 &1913585319145362
+--- !u!1 &1742294883868158
 GameObject:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   serializedVersion: 5
   m_Component:
-  - component: {fileID: 4092365517241732}
-  - component: {fileID: 114294518306842446}
-  - component: {fileID: 114958014051677010}
+  - component: {fileID: 4957071760015344}
+  - component: {fileID: 114226231529445062}
+  - component: {fileID: 114822858855744366}
   m_Layer: 0
-  m_Name: GameManager
+  m_Name: ServerGameManager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &4092365517241732
+--- !u!4 &4957071760015344
 Transform:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1913585319145362}
+  m_GameObject: {fileID: 1742294883868158}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -9.103487, y: -1.163328, z: -115.62146}
+  m_LocalPosition: {x: 723.7455, y: 319.8042, z: 13.267273}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &114294518306842446
+--- !u!114 &114226231529445062
 MonoBehaviour:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1913585319145362}
+  m_GameObject: {fileID: 1742294883868158}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d5e97933dfeebb54689a6d73103ae1c5, type: 3}
+  m_Script: {fileID: 372142912, guid: dc443db3e92b4983b9738c1131f555cb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxCreatureSlots: 10
---- !u!114 &114958014051677010
+  m_SceneId:
+    m_Value: 0
+  m_AssetId:
+    i0: 97
+    i1: 11
+    i2: 60
+    i3: 23
+    i4: 2
+    i5: 216
+    i6: 240
+    i7: 180
+    i8: 25
+    i9: 60
+    i10: 141
+    i11: 179
+    i12: 114
+    i13: 37
+    i14: 116
+    i15: 220
+  m_ServerOnly: 0
+  m_LocalPlayerAuthority: 0
+--- !u!114 &114822858855744366
 MonoBehaviour:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1913585319145362}
+  m_GameObject: {fileID: 1742294883868158}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8ff2203950c05fe4f9dd1b5e356d5535, type: 3}
+  m_Script: {fileID: 11500000, guid: 933e81857fe76724b9f9d6b8687f4f9e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  offlinePlayerPrefab: {fileID: 1323028805487128, guid: 2165cf1e7a9c18149929acf1e1a89e0a,
-    type: 2}
-  localPlayer: {fileID: 0}
-  opponentPlayer: {fileID: 0}
-  singlePlayer: {fileID: 0}
-  aiOpponent: {fileID: 0}
-  localHandRenderer: {fileID: 0}
-  opponentHandRenderer: {fileID: 0}
-  localResourcesRenderer: {fileID: 0}
-  opponentResourcesRenderer: {fileID: 0}
+  uiManager: {fileID: 0}

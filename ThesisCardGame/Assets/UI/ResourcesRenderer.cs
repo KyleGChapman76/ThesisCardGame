@@ -13,8 +13,8 @@ public class ResourcesRenderer : MonoBehaviour
 
 	private void GatherStars()
 	{
-		resourceStars = new GameObject[ClientSideGameManager.MAX_MAX_RESOURCES_PER_TURN];
-		for (int i = 0; i < ClientSideGameManager.MAX_MAX_RESOURCES_PER_TURN; i++)
+		resourceStars = new GameObject[GameConstants.MAX_MAX_RESOURCES_PER_TURN];
+		for (int i = 0; i < GameConstants.MAX_MAX_RESOURCES_PER_TURN; i++)
 		{
 			GameObject newResourceStar = Instantiate(resourceStarPrefab);
 			newResourceStar.transform.SetParent(gameObject.transform);

@@ -17,7 +17,7 @@ public class DraggableCard : MonoBehaviour, IBeginDragHandler, IDragHandler, IEn
 	private CanvasGroup thiscanvasGroup;
 
 	public Card cardThisRenders;
-	private ClientSideGameManager tcgGameManager;
+	private GameUIManager gameUIManager;
 
 	public Text cardName;
 	public Text cardText;
@@ -28,7 +28,7 @@ public class DraggableCard : MonoBehaviour, IBeginDragHandler, IDragHandler, IEn
 	public void Start()
 	{
 		mainCamera = GameObject.FindGameObjectWithTag("MainCamera").GetComponent<Camera>();
-		tcgGameManager = GameObject.FindObjectOfType<ClientSideGameManager>();
+		gameUIManager = GameObject.FindObjectOfType<GameUIManager>();
 		thisRectTransform = GetComponent<RectTransform>();
 		thiscanvasGroup = GetComponent<CanvasGroup>();
     }
@@ -87,7 +87,7 @@ public class DraggableCard : MonoBehaviour, IBeginDragHandler, IDragHandler, IEn
 			yield return null;
 		}
 
-		if (!tcgGameManager.TryPlayCard(cardThisRenders))
+		if (!gameUIManager.TryPlayCard(cardThisRenders))
 		{
 			GetComponent<Image>().enabled = true;
 		}

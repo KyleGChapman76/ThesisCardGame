@@ -9,12 +9,13 @@ public class PlayerHandRenderer : MonoBehaviour
 
 	private GameObject[] cardRenderObjects;
 
-    public bool cardsDraggable;
+	[SerializeField]
+    private bool cardsDraggable;
 
 	private void InitializeCardSlots()
 	{
-		cardRenderObjects = new GameObject[ClientSideGameManager.MAX_HAND_SIZE];
-		for (int i = 0; i < ClientSideGameManager.MAX_HAND_SIZE; i++)
+		cardRenderObjects = new GameObject[GameConstants.MAX_HAND_SIZE];
+		for (int i = 0; i < GameConstants.MAX_HAND_SIZE; i++)
 		{
 			GameObject newCardRenderer = Instantiate(cardRenderPrefab);
 			newCardRenderer.transform.SetParent(this.gameObject.transform);
@@ -36,7 +37,7 @@ public class PlayerHandRenderer : MonoBehaviour
 		}
 
 		//Debug.Log("Rendering " + hand.Count.ToString() + " cards for player.");
-		for (int i = 0; i < ClientSideGameManager.MAX_HAND_SIZE; i++)
+		for (int i = 0; i < GameConstants.MAX_HAND_SIZE; i++)
 		{
 			GameObject cardRenderObject = cardRenderObjects[i];
 
@@ -55,4 +56,16 @@ public class PlayerHandRenderer : MonoBehaviour
         }
     }
 
+	public void SetCardsDraggable(bool draggable)
+	{
+		cardsDraggable = draggable;
+
+		//Debug.Log("Rendering " + hand.Count.ToString() + " cards for player.");
+		for (int i = 0; i < GameConstants.MAX_HAND_SIZE; i++)
+		{
+			GameObject cardRenderObject = cardRenderObjects[i];
+			DraggableCard dragableCardHandler = cardRenderObject.GetComponent<DraggableCard>();
+			dragableCardHandler.enabled = cardsDraggable;
+		}
+	}
 }

@@ -8,6 +8,8 @@ using UnityEngine.Networking;
 //including life total, their library, and their hand
 public class OnlineTCGPlayer : NetworkBehaviour, ICardGamePlayer
 {
+	public GameObject serverGameManager;
+
 	private Library library;
 
 	private List<Card> hand;
@@ -31,22 +33,21 @@ public class OnlineTCGPlayer : NetworkBehaviour, ICardGamePlayer
 	[SyncVar]
 	private bool hasPlayedAResourceThisTurn;
 
-	private ClientSideGameManager clientGameManager;
+	private LocalGameManager clientGameManager;
 
 	[SyncVar(hook = "IsMyTurnChanged")]
 	private bool isMyTurn;
 
+	private void Start()
+	{
+		if (isServer && isLocalPlayer)
+		{
+			Debug.Log("Server spawned player starts, instantiating game manager.");
+			Instantiate(serverGameManager);
+		}
+	}
+
 	/*** Getters and Setters ***/
-
-	public void SetLibrary(Library library)
-	{
-		this.library = library;
-	}
-
-	public Library GetLibrary()
-	{
-		return library;
-	}
 
 	public int GetCurrentResources()
 	{
@@ -68,11 +69,75 @@ public class OnlineTCGPlayer : NetworkBehaviour, ICardGamePlayer
 		return handCount;
 	}
 
+	/*** Initialization Functions ***/
+
+	public void InitializePlayer(Library library)
+	{
+		this.library = library;
+
+		hand = new List<Card>();
+		DrawLocalHand();
+
+		if (!isServer)
+		{
+			CmdInitializeQualities();
+		}
+		else
+		{
+			InitializeQualities();
+		}
+	}
+
+	private void InitializeQualities()
+	{
+		if (!isServer)
+		{
+			Debug.Log("Should only be run on the server.");
+		}
+
+		maxResourcesPerTurn = GameConstants.STARTING_MAX_RESOURCES_PER_TURN;
+		currentResources = maxResourcesPerTurn;
+	}
+
+	private void DrawLocalHand()
+	{
+		Debug.Log("Drawing hand for player.");
+
+		int handSize = GameConstants.STARTING_HAND_SIZE;
+		if (hand.Count > 0)
+		{
+			handSize = hand.Count - 1;
+		}
+		for (int i = 0; i < handSize; i++)
+		{
+			Card cardDrawn;
+			if (library.DrawCard(out cardDrawn))
+			{
+				hand.Add(cardDrawn);
+			}
+			else
+			{
+				Debug.LogError("Could not draw enough cards for hand.");
+			}
+		}
+
+		if (isServer)
+		{
+			handCount = hand.Count;
+		}
+		else
+		{
+			CmdAnnounceHandSize(hand.Count, 1);
+		}
+	}
+
+	/*** Actions ***/
+
 	public void DrawCard()
 	{
 		Debug.Log("Player drawing card.");
 
-		if (handCount >= ClientSideGameManager.MAX_HAND_SIZE)
+		if (handCount >= GameConstants.MAX_HAND_SIZE)
 		{
 			Debug.Log("Can't draw a card, due to maximum hand size.");
 			return;
@@ -83,7 +148,6 @@ public class OnlineTCGPlayer : NetworkBehaviour, ICardGamePlayer
 		{
 			hand.Add(cardDrawn);
 			handCount++;
-			clientGameManager.UpdateUI();
 		}
 		else
 		{
@@ -95,7 +159,6 @@ public class OnlineTCGPlayer : NetworkBehaviour, ICardGamePlayer
 	{
 		Debug.Log("Resetting resources.");
 		currentResources = maxResourcesPerTurn;
-		clientGameManager.UpdateUI();
 	}
 
 	/*** Turn Structure Functions ***/
@@ -162,85 +225,6 @@ public class OnlineTCGPlayer : NetworkBehaviour, ICardGamePlayer
 		{
 			Debug.LogError("Server side start turn ran on client!");
 			return;
-		}
-	}
-
-	/*** Initialization Functions ***/
-
-	public void InitializePlayer(ClientSideGameManager clientSide, bool isOpponent)
-	{
-		clientGameManager = clientSide;
-		if (isOpponent)
-		{
-			InitializeMultiplayerOpponent(clientSide);
-		}
-		else
-		{
-			InitializeLocalPlayer(clientSide);
-		}
-	}
-
-	private void InitializeLocalPlayer(ClientSideGameManager clientSide)
-	{
-		Debug.Log("Initializing local player on " + (isServer ? " server." : " client."));
-
-		hand = new List<Card>();
-		DrawLocalHand();
-
-		if (isServer)
-		{
-			maxResourcesPerTurn = ClientSideGameManager.STARTING_MAX_RESOURCES_PER_TURN;
-			currentResources = maxResourcesPerTurn;
-			clientSide.InitializeLocalTurnUI();
-			isMyTurn = true;
-        }
-		else
-		{
-			clientSide.InitializeOpponentTurnUI();
-		}
-    }
-
-	private void InitializeMultiplayerOpponent(ClientSideGameManager clientSide)
-	{
-		Debug.Log("Initializing opponent on " + (isServer ? " server." : " client."));
-
-		if (isServer)
-		{
-			maxResourcesPerTurn = ClientSideGameManager.STARTING_MAX_RESOURCES_PER_TURN;
-			currentResources = maxResourcesPerTurn;
-			isMyTurn = false;
-		}
-    }
-
-	private void DrawLocalHand()
-	{
-		Debug.Log("Drawing hand for player.");
-
-		int handSize = ClientSideGameManager.STARTING_HAND_SIZE;
-		if (hand.Count > 0)
-		{
-			handSize = hand.Count - 1;
-		}
-		for (int i = 0; i < handSize; i++)
-		{
-			Card cardDrawn;
-			if (library.DrawCard(out cardDrawn))
-			{
-				hand.Add(cardDrawn);
-			}
-			else
-			{
-				Debug.LogError("Could not draw enough cards for hand.");
-			}
-		}
-
-		if (isServer)
-		{
-			handCount = hand.Count;
-		}
-		else
-		{
-			CmdAnnounceHandSize(hand.Count, 1);
 		}
 	}
 
@@ -334,6 +318,13 @@ public class OnlineTCGPlayer : NetworkBehaviour, ICardGamePlayer
 
 	/*** RPCs and Commands ***/
 
+	//client tells the server that it wants to be initialized
+	[Command]
+	private void CmdInitializeQualities()
+	{
+		InitializeQualities();
+    }
+
 	//server tells the client that a card of a certain ID has been played
 	[ClientRpc]
 	private void RpcPlayerPlaysCard(int cardID, int playerNum)
@@ -353,7 +344,9 @@ public class OnlineTCGPlayer : NetworkBehaviour, ICardGamePlayer
 		{
 			RpcPlayerPlaysCard(cardID, playerNum);
 		}
-    }
+
+		LocalGameManager.SingletonGameManager.PlayerStatusChanged();
+	}
 
 	//client tells the server that it wants to reset its resources (DEBUG)
 	[Command]
@@ -361,6 +354,8 @@ public class OnlineTCGPlayer : NetworkBehaviour, ICardGamePlayer
 	{
 		Debug.Log("Player " + playerNum + " resetting their resources.");
 		currentResources = maxResourcesPerTurn;
+
+		LocalGameManager.SingletonGameManager.PlayerStatusChanged();
 	}
 
 	//client tells the server that its hand size has changed
@@ -369,6 +364,8 @@ public class OnlineTCGPlayer : NetworkBehaviour, ICardGamePlayer
 	{
 		Debug.Log("Player " + playerNum + " hand size became " + handSize);
 		handCount = handSize;
+
+		LocalGameManager.SingletonGameManager.PlayerStatusChanged();
 	}
 
 	//client tells the server that it would like to change the turn
@@ -385,6 +382,8 @@ public class OnlineTCGPlayer : NetworkBehaviour, ICardGamePlayer
 		{
 			ServerSideEndTurn();
 		}
+
+		LocalGameManager.SingletonGameManager.PlayerStatusChanged();
 	}
 
 	/*** SyncVar Hooks ***/
@@ -393,40 +392,23 @@ public class OnlineTCGPlayer : NetworkBehaviour, ICardGamePlayer
 	{
 		currentResources = value;
 		Debug.Log("CURRENT RESOURCES HOOK: " + value);
-		if (clientGameManager != null)
-		{
-			clientGameManager.UpdatePlayerResourcesUI();
-		}
 	}
 
 	private void MaxResourcesPerTurnChanged(int value)
 	{
 		maxResourcesPerTurn = value;
 		Debug.Log("MAX RESOURCES HOOK: " + value);
-		if (clientGameManager != null)
-		{
-			clientGameManager.UpdatePlayerResourcesUI();
-		}
 	}
 
 	private void HandCountChanged(int value)
 	{
 		handCount = value;
 		Debug.Log("HAND COUNT HOOK: " + value);
-		if (clientGameManager != null)
-		{
-			clientGameManager.UpdateCardShowingUI();
-		}
 	}
 
 	private void IsMyTurnChanged(bool value)
 	{
 		isMyTurn = value;
 		Debug.Log("MY TURN HOOK: " + value);
-
-		if (isMyTurn && localPlayerAuthority)
-		{
-			clientGameManager.TryBeginTurn();
-		}
 	}
 }

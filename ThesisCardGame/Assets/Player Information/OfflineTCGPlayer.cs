@@ -23,19 +23,9 @@ public class OfflineTCGPlayer : MonoBehaviour, ICardGamePlayer
 	private int currentResources;
 	private bool hasPlayedAResourceThisTurn;
 
-	private ClientSideGameManager clientGameManager;
+	private AIOpponent aiOpponent;
 
 	/*** Getters and Setters ***/
-
-	public void SetLibrary(Library library)
-	{
-		this.library = library;
-	}
-
-	public Library GetLibrary()
-	{
-		return library;
-	}
 
 	public int GetCurrentResources()
 	{
@@ -57,99 +47,34 @@ public class OfflineTCGPlayer : MonoBehaviour, ICardGamePlayer
 		return handCount;
 	}
 
-	public void DrawCard()
-	{
-		Debug.Log("Player drawing card.");
-
-		if (handCount >= MAX_HAND_SIZE)
-		{
-			Debug.Log("Can't draw a card, due to maximum hand size.");
-			return;
-		}
-
-		Card cardDrawn;
-		if (library.DrawCard(out cardDrawn))
-		{
-			hand.Add(cardDrawn);
-			handCount = hand.Count;
-			clientGameManager.UpdateUI();
-		}
-		else
-		{
-			Debug.LogError("Could not draw card.");
-		}
-	}
-
-	public void ResetResources()
-	{
-		Debug.Log("Resetting resources.");
-		currentResources = maxResourcesPerTurn;
-		clientGameManager.UpdateUI();
-	}
-
-	/*** Turn Structure Functions ***/
-
-	public bool TryStartTurn()
-	{
-		hasPlayedAResourceThisTurn = false;
-		ResetResources();
-		DrawCard();
-
-		return true;
-    }
-
-	public bool TryEndTurn()
-	{
-		//TODO
-		return true;
-	}
-
 	/*** Initialization Functions ***/
 
-	public void InitializePlayer(ClientSideGameManager clientSide, bool isOpponent)
-	{
-		if (library == null)
-		{
-			Debug.LogError("Can't initialize offline player when library hasn't been set!");
-			return;
-		}
-
-		library.Shuffle(ClientSideGameManager.rand);
-
-		if (isOpponent)
-		{
-			InitializeAIOpponent(clientSide);
-		}
-		else
-		{
-			InitializeSinglePlayer(clientSide);
-		}
-	}
-
-	private void InitializeSinglePlayer(ClientSideGameManager clientSide)
+	public void InitializePlayer(Library library)
 	{
 		Debug.Log("Initializing single player.");
 
+		this.library = library;
+		library.Shuffle(LocalGameManager.rand);
+
 		hand = new List<Card>();
 		DrawLocalHand();
 
 		maxResourcesPerTurn = STARTING_MAX_RESOURCES_PER_TURN;
 		currentResources = maxResourcesPerTurn;
-
-		clientGameManager = clientSide;
 	}
 
-	private void InitializeAIOpponent(ClientSideGameManager clientSide)
+	public void InitializeOpponent(Library library)
 	{
 		Debug.Log("Initializing AI opponent (except not really).");
 
+		this.library = library;
+		library.Shuffle(LocalGameManager.rand);
+
 		hand = new List<Card>();
 		DrawLocalHand();
 
 		maxResourcesPerTurn = STARTING_MAX_RESOURCES_PER_TURN;
 		currentResources = maxResourcesPerTurn;
-
-		clientGameManager = clientSide;
 
 		gameObject.AddComponent<AIOpponent>();
 	}
@@ -179,7 +104,24 @@ public class OfflineTCGPlayer : MonoBehaviour, ICardGamePlayer
 		handCount = hand.Count;
 	}
 
-	//client side logic
+	/*** Turn Structure Functions ***/
+
+	public bool TryStartTurn()
+	{
+		hasPlayedAResourceThisTurn = false;
+		ResetResources();
+		DrawCard();
+
+		return true;
+    }
+
+	public bool TryEndTurn()
+	{
+		return true;
+	}
+
+	/*** Action Functions ***/
+
 	public bool TryPlayCard(Card card)
 	{
 		if (card == null)
@@ -199,10 +141,13 @@ public class OfflineTCGPlayer : MonoBehaviour, ICardGamePlayer
 			}
 
 			maxResourcesPerTurn += ((ResourceCard)card).BaseDefinition.ResourcesGiven;
+			currentResources += ((ResourceCard)card).BaseDefinition.ResourcesGiven;
 			hasPlayedAResourceThisTurn = true;
 
 			hand.Remove(card);
 			handCount = hand.Count;
+
+			LocalGameManager.SingletonGameManager.PlayerStatusChanged();
 		}
 		else if (card is SpellCard)
 		{
@@ -231,9 +176,42 @@ public class OfflineTCGPlayer : MonoBehaviour, ICardGamePlayer
 				hand.Remove(card);
 				handCount = hand.Count;
 			}
+
+			LocalGameManager.SingletonGameManager.PlayerStatusChanged();
 		}
 
-		clientGameManager.UpdateUI();
 		return true;
+	}
+
+	public void DrawCard()
+	{
+		Debug.Log("Player drawing card.");
+
+		if (handCount >= MAX_HAND_SIZE)
+		{
+			Debug.Log("Can't draw a card, due to maximum hand size.");
+			return;
+		}
+
+		Card cardDrawn;
+		if (library.DrawCard(out cardDrawn))
+		{
+			hand.Add(cardDrawn);
+			handCount = hand.Count;
+
+			LocalGameManager.SingletonGameManager.PlayerStatusChanged();
+		}
+		else
+		{
+			Debug.LogError("Could not draw card.");
+		}
+	}
+
+	public void ResetResources()
+	{
+		Debug.Log("Resetting resources.");
+		currentResources = maxResourcesPerTurn;
+
+		LocalGameManager.SingletonGameManager.PlayerStatusChanged();
 	}
 }

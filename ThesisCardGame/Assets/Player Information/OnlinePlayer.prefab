@@ -72,7 +72,7 @@ MonoBehaviour:
     i14: 108
     i15: 59
   m_ServerOnly: 0
-  m_LocalPlayerAuthority: 0
+  m_LocalPlayerAuthority: 1
 --- !u!114 &114490126671819366
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -84,3 +84,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 096f50fa13503544cb8adecab7be8bff, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  serverGameManager: {fileID: 1742294883868158, guid: 610b3c1702d8f0b4193c8db3722574dc,
+    type: 2}
