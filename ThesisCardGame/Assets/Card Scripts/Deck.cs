@@ -9,15 +9,13 @@ public class Deck
 	private SortedDictionary<int, int> deck;
 	private int minDeckSize;
 	private int maxDeckSize;
-	private int maxCopiesPerCard;
 
 	private int cardCount;
 
 	//initialize a deck with restrictions on copies per card and minimum/maximum deck size
-	public Deck(int minDeckSize = 60, int maxDeckSize = 120, int maxCopiesPerCard = 4)
+	public Deck(int minDeckSize = 60, int maxDeckSize = 120)
 	{
 		deck = new SortedDictionary<int, int>();
-		this.maxCopiesPerCard = maxCopiesPerCard;
 		this.minDeckSize = minDeckSize;
 		this.maxDeckSize = maxDeckSize;
 		cardCount = 0;
@@ -31,13 +29,15 @@ public class Deck
 			Debug.LogError("Tried to put a 0/negative number of a single card into the deck.");
 			return;
 		}
+		
+		int maxCopiesOfCard = CardDefinition.GetCardDefinitionWithID(cardID).MaxCopiesInDeck;
 
 		if (deck.ContainsKey(cardID))
 		{
-			if ((deck[cardID] + numberToAdd) > maxCopiesPerCard)
+            if ((deck[cardID] + numberToAdd) > maxCopiesOfCard)
 			{
-				Debug.LogError("Putting that many cards in would go over the limit for a single card into the deck.");
-				return;
+				Debug.LogError("Putting " + numberToAdd + " cards in would make the current number " + deck[cardID].ToString() +  " go over the limit for that card: " + maxCopiesOfCard.ToString());
+                return;
 			}
 			else
 			{
@@ -47,8 +47,16 @@ public class Deck
 		}
 		else
 		{
-			deck.Add(cardID, numberToAdd);
-			cardCount += numberToAdd;
+			if (numberToAdd > maxCopiesOfCard)
+			{
+				Debug.LogError("Putting " + numberToAdd + " cards in would go over the limit for that card: " + maxCopiesOfCard.ToString());
+				return;
+			}
+			else
+			{
+				deck.Add(cardID, numberToAdd);
+				cardCount += numberToAdd;
+			}
         }
     }
 

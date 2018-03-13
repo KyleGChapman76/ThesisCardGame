@@ -4,6 +4,6 @@ using UnityEngine;
 
 public interface IGameManager
 {
-	bool TryEndTurn();
+	bool LocalEndTurn();
 	bool TryPlayCard(Card card);
 }

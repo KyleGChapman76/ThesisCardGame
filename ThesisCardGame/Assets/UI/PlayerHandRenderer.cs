@@ -12,8 +12,9 @@ public class PlayerHandRenderer : MonoBehaviour
 	[SerializeField]
     private bool cardsDraggable;
 
-	private void InitializeCardSlots()
+	public void InitializeCardRenderObjects()
 	{
+		//initialize card slots
 		cardRenderObjects = new GameObject[GameConstants.MAX_HAND_SIZE];
 		for (int i = 0; i < GameConstants.MAX_HAND_SIZE; i++)
 		{
@@ -30,13 +31,12 @@ public class PlayerHandRenderer : MonoBehaviour
 
 	public void RenderCards(List<Card> hand)
 	{
-		//if card slots haven't been created yet, create them before rendering cards to the slots
 		if (cardRenderObjects == null)
 		{
-			InitializeCardSlots();
-		}
+			InitializeCardRenderObjects();
+        }
 
-		//Debug.Log("Rendering " + hand.Count.ToString() + " cards for player.");
+		Debug.Log("Rendering " + hand.Count.ToString() + " cards for player.");
 		for (int i = 0; i < GameConstants.MAX_HAND_SIZE; i++)
 		{
 			GameObject cardRenderObject = cardRenderObjects[i];
@@ -58,6 +58,12 @@ public class PlayerHandRenderer : MonoBehaviour
 
 	public void SetCardsDraggable(bool draggable)
 	{
+		if (cardRenderObjects == null)
+		{
+			Debug.LogError("Card render objects not initialized when trying to set cards draggable or not.");
+			return;
+		}
+
 		cardsDraggable = draggable;
 
 		//Debug.Log("Rendering " + hand.Count.ToString() + " cards for player.");

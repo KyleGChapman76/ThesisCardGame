@@ -7,12 +7,6 @@ using UnityEngine.Networking;
 //including life total, their library, and their hand
 public class OfflineTCGPlayer : MonoBehaviour, ICardGamePlayer
 {
-	//library management
-	public const int STARTING_HAND_SIZE = 6;
-	public const int MAX_HAND_SIZE = 8;
-	public const int MAX_MAX_RESOURCES_PER_TURN = 12;
-	public const int STARTING_MAX_RESOURCES_PER_TURN = 2;
-
 	private Library library;
 
 	private List<Card> hand;
@@ -22,6 +16,8 @@ public class OfflineTCGPlayer : MonoBehaviour, ICardGamePlayer
 	private int maxResourcesPerTurn;
 	private int currentResources;
 	private bool hasPlayedAResourceThisTurn;
+
+	private int lifeTotal;
 
 	private AIOpponent aiOpponent;
 
@@ -37,6 +33,11 @@ public class OfflineTCGPlayer : MonoBehaviour, ICardGamePlayer
 		return maxResourcesPerTurn;
 	}
 
+	public int GetLifeTotal()
+	{
+		return lifeTotal;
+    }
+
 	public List<Card> GetHand()
 	{
 		return hand;
@@ -49,41 +50,29 @@ public class OfflineTCGPlayer : MonoBehaviour, ICardGamePlayer
 
 	/*** Initialization Functions ***/
 
-	public void InitializePlayer(Library library)
+	public void InitializePlayer(Library library, bool isAI)
 	{
-		Debug.Log("Initializing single player.");
-
 		this.library = library;
 		library.Shuffle(LocalGameManager.rand);
 
 		hand = new List<Card>();
 		DrawLocalHand();
 
-		maxResourcesPerTurn = STARTING_MAX_RESOURCES_PER_TURN;
+		maxResourcesPerTurn = GameConstants.STARTING_MAX_RESOURCES_PER_TURN;
 		currentResources = maxResourcesPerTurn;
-	}
+		lifeTotal = GameConstants.STARTING_LIFE_TOTAL;
 
-	public void InitializeOpponent(Library library)
-	{
-		Debug.Log("Initializing AI opponent (except not really).");
-
-		this.library = library;
-		library.Shuffle(LocalGameManager.rand);
-
-		hand = new List<Card>();
-		DrawLocalHand();
-
-		maxResourcesPerTurn = STARTING_MAX_RESOURCES_PER_TURN;
-		currentResources = maxResourcesPerTurn;
-
-		gameObject.AddComponent<AIOpponent>();
-	}
+		if (isAI)
+		{
+			gameObject.AddComponent<AIOpponent>();
+		}
+    }
 
 	private void DrawLocalHand()
 	{
 		Debug.Log("Drawing hand for player.");
 
-		int handSize = STARTING_HAND_SIZE;
+		int handSize = GameConstants.STARTING_HAND_SIZE;
 		if (hand.Count > 0)
 		{
 			handSize = hand.Count - 1;
@@ -187,7 +176,7 @@ public class OfflineTCGPlayer : MonoBehaviour, ICardGamePlayer
 	{
 		Debug.Log("Player drawing card.");
 
-		if (handCount >= MAX_HAND_SIZE)
+		if (handCount >= GameConstants.MAX_HAND_SIZE)
 		{
 			Debug.Log("Can't draw a card, due to maximum hand size.");
 			return;

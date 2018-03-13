@@ -21,7 +21,6 @@ GameObject:
   - component: {fileID: 4475486599982704}
   - component: {fileID: 114892168169939548}
   - component: {fileID: 114840418991063904}
-  - component: {fileID: 114056412713113560}
   m_Layer: 0
   m_Name: SinglePlayerGameManager
   m_TagString: Untagged
@@ -42,20 +41,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &114056412713113560
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1013176979730752}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 92250a1ba07bbb2429f74095ad0603a1, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  uiManager: {fileID: 114892168169939548}
-  offlinePlayerPrefab: {fileID: 1323028805487128, guid: 2165cf1e7a9c18149929acf1e1a89e0a,
-    type: 2}
 --- !u!114 &114840418991063904
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -81,6 +66,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8ff2203950c05fe4f9dd1b5e356d5535, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  gameManager: {fileID: 0}
   localHandRenderer: {fileID: 0}
   opponentHandRenderer: {fileID: 0}
   localResourcesRenderer: {fileID: 0}

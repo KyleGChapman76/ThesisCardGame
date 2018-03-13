@@ -7,14 +7,9 @@ public interface ICardGamePlayer
 {
 	int GetCurrentResources();
 	int GetResourcesPerTurn();
-	void ResetResources();
+	int GetLifeTotal();
 
 	List<Card> GetHand();
 	int GetHandCount();
 	void DrawCard();
-
-	bool TryPlayCard(Card card);
-
-	bool TryStartTurn();
-	bool TryEndTurn();
 }

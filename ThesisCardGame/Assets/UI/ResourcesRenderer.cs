@@ -26,12 +26,10 @@ public class ResourcesRenderer : MonoBehaviour
 	
 	public void RenderResources(int maxResourcesPerTurn, int currentResources)
 	{
-        //Debug.Log("Rendering resources (" + currentResources + "/" + maxResourcesPerTurn + ").");
-
 		if (resourceStars == null)
 		{
 			GatherStars();
-		}
+        }
 
 		for (int i = 0; i < resourceStars.Length; i++)
 		{

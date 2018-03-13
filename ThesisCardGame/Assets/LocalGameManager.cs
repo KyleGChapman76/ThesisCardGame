@@ -33,42 +33,10 @@ public class LocalGameManager : MonoBehaviour, IGameManager
 	}
 	private NetworkedGameManager serverGameManager;
 
-	//start the local game logic
-	//if find a network manager, wait for all players to load in to then initialize multiplayer logic
-	//otherwise, setup players
-	void Start ()
-	{
-		Debug.Log("GameManager began.");
-
-		SingletonGameManager = this;
-
-		InitializeCardsDatabase();
-		InitializeHardCodedLibrary();
-
-		//if multiplayer game, wait for players to load in
-		if (!GameObject.FindObjectOfType<NetworkManager>())
-		{
-			GameObject singlePlayerObject = Instantiate(offlinePlayerPrefab);
-			localPlayer = singlePlayerObject.GetComponent<OfflineTCGPlayer>();
-
-			GameObject aiOpponentObject = Instantiate(offlinePlayerPrefab);
-			opponentPlayer = aiOpponentObject.GetComponent<OfflineTCGPlayer>();
-
-			localPlayer.InitializePlayer(hardCodedLibrary);
-			opponentPlayer.InitializeOpponent(hardCodedLibrary);
-
-			isPlayersTurn = true;
-
-			uiManager.gameManager = this;
-			uiManager.UpdateUI(localPlayer, opponentPlayer);
-			uiManager.InitializeLocalTurnUI();
-        }
-	}
-
 	//initialze the list of cards
-	private void InitializeCardsDatabase()
+	static LocalGameManager()
 	{
-		Debug.Log("Beginning the game.");
+		Debug.Log("Initialize cards database.");
 
 		//define all game cards
 		new ResourceCardDefinition("Resource 1", 1, 1);
@@ -81,12 +49,54 @@ public class LocalGameManager : MonoBehaviour, IGameManager
 		new SpellCardDefinition("Spell 3", 3, "Target opponent loses 4 life.");
 	}
 
+	//start the local game logic
+	//if find a network manager, wait for all players to load in to then initialize multiplayer logic
+	//otherwise, setup players
+	void Start ()
+	{
+		Debug.Log("GameManager began.");
+
+		SingletonGameManager = this;
+
+		InitializeHardCodedLibrary();
+
+		uiManager.gameManager = this;
+
+		//if game is not multiplayer, spawn players and begin the UI
+		if (!GameObject.FindObjectOfType<NetworkManager>())
+		{
+			StartCoroutine("InitializeGameAfterSmallTime");
+        }
+		//otherwise, do nothing!
+	}
+
+	private IEnumerator InitializeGameAfterSmallTime()
+	{
+		yield return new WaitForSeconds(.1f);
+
+		Debug.Log("Starting single player game.");
+		GameObject singlePlayerObject = Instantiate(offlinePlayerPrefab);
+		localPlayer = singlePlayerObject.GetComponent<OfflineTCGPlayer>();
+
+		GameObject aiOpponentObject = Instantiate(offlinePlayerPrefab);
+		opponentPlayer = aiOpponentObject.GetComponent<OfflineTCGPlayer>();
+
+		localPlayer.InitializePlayer(hardCodedLibrary, false);
+		opponentPlayer.InitializePlayer(hardCodedLibrary, true);
+
+		isPlayersTurn = true;
+		uiManager.UpdateUI(localPlayer, opponentPlayer);
+		uiManager.InitializeLocalTurnUI();
+	}
+
 	private void InitializeHardCodedLibrary()
 	{
-		Deck hardcodedDeck = new Deck(30, 60, 4);
+		Debug.Log("Initializing hard coded library.");
 
-		hardcodedDeck.AddCard(0, 4);
-		hardcodedDeck.AddCard(1, 4);
+		Deck hardcodedDeck = new Deck(30, 60);
+
+		hardcodedDeck.AddCard(0, 8);
+		hardcodedDeck.AddCard(1, 8);
 		hardcodedDeck.AddCard(2, 4);
 		hardcodedDeck.AddCard(3, 4);
 		hardcodedDeck.AddCard(4, 4);
@@ -120,11 +130,11 @@ public class LocalGameManager : MonoBehaviour, IGameManager
 		}
 	}
 
-	public bool TryEndTurn()
+	public bool LocalEndTurn()
 	{
 		if (serverGameManager)
 		{
-			return serverGameManager.TryEndTurn();
+			return serverGameManager.LocalEndTurn();
         }
 
 		if (isPlayersTurn)
@@ -158,4 +168,9 @@ public class LocalGameManager : MonoBehaviour, IGameManager
 	{
 		uiManager.UpdateUI(localPlayer, opponentPlayer);
 	}
+
+	public void ReportGameLoss(bool localPlayerLost)
+	{
+		uiManager.InitializeGameOverUI(!localPlayerLost);
+    }
 }

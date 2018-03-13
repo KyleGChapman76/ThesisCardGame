@@ -8,7 +8,7 @@ public class OpponentHandRenderer : MonoBehaviour
 
 	private GameObject[] cardRenderObjects;
 
-	private void InitializeCardSlots()
+	private void InitializeCardRenderObjects()
 	{
 		cardRenderObjects = new GameObject[GameConstants.MAX_HAND_SIZE];
 		for (int i = 0; i < GameConstants.MAX_HAND_SIZE; i++)
@@ -24,8 +24,8 @@ public class OpponentHandRenderer : MonoBehaviour
 	{
 		if (cardRenderObjects == null)
 		{
-			InitializeCardSlots();
-		}
+			InitializeCardRenderObjects();
+        }
 
 		//Debug.Log("Rendering " + handCount.ToString() + " cards for enemy.");
 		for (int i = 0; i < GameConstants.MAX_HAND_SIZE; i++)

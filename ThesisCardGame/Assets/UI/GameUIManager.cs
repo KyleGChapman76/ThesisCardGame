@@ -7,12 +7,19 @@ using UnityEngine.UI;
 
 public class GameUIManager : MonoBehaviour
 {
-	public IGameManager gameManager;
+	public LocalGameManager gameManager;
 
 	public PlayerHandRenderer localHandRenderer;
 	public OpponentHandRenderer opponentHandRenderer;
+
 	public ResourcesRenderer localResourcesRenderer;
 	public ResourcesRenderer opponentResourcesRenderer;
+
+	public LifeTotalRenderer localLifeTotalRenderer;
+	public LifeTotalRenderer opponentLifeTotalRenderer;
+
+	public GameObject gameOverOverlay;
+	public Text gameOverResultText;
 
 	public Button endTurnButton;
 
@@ -20,7 +27,7 @@ public class GameUIManager : MonoBehaviour
 	{
 		if (localPlayer == null)
 		{
-			Debug.LogError("Can't show UI for null player.");
+			Debug.LogError("Can't show UI for null local player.");
 			return;
 		}
 
@@ -30,11 +37,14 @@ public class GameUIManager : MonoBehaviour
 			return;
 		}
 
-		UpdateCardShowingUI(localPlayer, opponentPlayer);
+		UpdateCardUI(localPlayer, opponentPlayer);
 		UpdatePlayerResourcesUI(localPlayer, opponentPlayer);
-	}
+		UpdatePlayerLifeUI(localPlayer, opponentPlayer);
 
-	public void UpdateCardShowingUI(ICardGamePlayer localPlayer, ICardGamePlayer opponentPlayer)
+		gameOverOverlay.SetActive(false);
+    }
+
+	public void UpdateCardUI(ICardGamePlayer localPlayer, ICardGamePlayer opponentPlayer)
 	{
 		if (localPlayer == null)
 		{
@@ -83,7 +93,7 @@ public class GameUIManager : MonoBehaviour
 
 		if (localResourcesRenderer == null)
 		{
-			Debug.LogError("UNo access to local resources renderer.");
+			Debug.LogError("No access to local resources renderer.");
 		}
 		else
 		{
@@ -100,6 +110,39 @@ public class GameUIManager : MonoBehaviour
 		}
 	}
 
+	public void UpdatePlayerLifeUI(ICardGamePlayer localPlayer, ICardGamePlayer opponentPlayer)
+	{
+		if (localPlayer == null)
+		{
+			Debug.LogError("Can't show life total for null player.");
+			return;
+		}
+
+		if (opponentPlayer == null)
+		{
+			Debug.LogError("Can't show life total for null opponent.");
+			return;
+		}
+
+		if (localLifeTotalRenderer == null)
+		{
+			Debug.LogError("No access to local life total renderer.");
+		}
+		else
+		{
+			localLifeTotalRenderer.RenderLifeTotal(localPlayer.GetLifeTotal());
+		}
+
+		if (opponentLifeTotalRenderer == null)
+		{
+			Debug.LogError("No access to opponent life total renderer.");
+		}
+		else
+		{
+			opponentLifeTotalRenderer.RenderLifeTotal(opponentPlayer.GetLifeTotal());
+		}
+	}
+
 	//try to begin the process of playing a card from the client
 	public bool TryPlayCard(Card card)
 	{
@@ -109,7 +152,7 @@ public class GameUIManager : MonoBehaviour
 	//try to begin the process of ending the turn from the client
 	public void TryEndTurn()
 	{
-		gameManager.TryEndTurn();
+		gameManager.LocalEndTurn();
     }
 
 	/*** Initializing UI for different turns ***/
@@ -126,5 +169,21 @@ public class GameUIManager : MonoBehaviour
 		Debug.Log("Initializing UI for the opponents turn.");
 		endTurnButton.interactable = false;
 		localHandRenderer.SetCardsDraggable(false);
+	}
+
+	internal void InitializeGameOverUI(bool weWon)
+	{
+		endTurnButton.interactable = false;
+		localHandRenderer.SetCardsDraggable(false);
+
+		gameOverOverlay.SetActive(true);
+		if (weWon)
+		{
+			gameOverResultText.text = "You win!";
+		}
+		else
+		{
+			gameOverResultText.text = "You lost!";
+		}
 	}
 }
