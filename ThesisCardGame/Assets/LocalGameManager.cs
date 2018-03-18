@@ -1,6 +1,10 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Xml;
+using System.Xml.Linq;
 using UnityEngine;
 using UnityEngine.Networking;
 
@@ -33,23 +37,7 @@ public class LocalGameManager : MonoBehaviour, IGameManager
 	}
 	private NetworkedGameManager serverGameManager;
 
-	//initialze the list of cards
-	static LocalGameManager()
-	{
-		Debug.Log("Initialize cards database.");
-
-		//define all game cards
-		new ResourceCardDefinition("Resource 1", 1, 1);
-		new ResourceCardDefinition("Resource 2", 1, 2);
-		new CreatureCardDefinition("Creature 1", 2, "Flight", 2, 2);
-		new CreatureCardDefinition("Creature 2", 4, "Overrun", 3, 4);
-		new CreatureCardDefinition("Creature 3", 3, "Speed", 2, 3);
-		new SpellCardDefinition("Spell 1", 1, "Destroy target creature.");
-		new SpellCardDefinition("Spell 2", 2, "You gain 4 life.");
-		new SpellCardDefinition("Spell 3", 3, "Target opponent loses 4 life.");
-	}
-
-	//start the local game logic
+		//start the local game logic
 	//if find a network manager, wait for all players to load in to then initialize multiplayer logic
 	//otherwise, setup players
 	void Start ()
@@ -58,6 +46,7 @@ public class LocalGameManager : MonoBehaviour, IGameManager
 
 		SingletonGameManager = this;
 
+		InitializeCardDatabase();
 		InitializeHardCodedLibrary();
 
 		uiManager.gameManager = this;
@@ -68,6 +57,75 @@ public class LocalGameManager : MonoBehaviour, IGameManager
 			StartCoroutine("InitializeGameAfterSmallTime");
         }
 		//otherwise, do nothing!
+	}
+
+	//initialze the list of cards
+	private void InitializeCardDatabase()
+	{
+		Debug.Log("Initialize cards database.");
+
+		string XMLLocale = Path.Combine(Application.dataPath, "CardsWithAIData.xml");
+		XNamespace nameSpace = "http://example.com/Cards";
+		try
+		{
+			XDocument xmlDoc = XDocument.Load(XMLLocale);
+
+			//get resource cards from file
+			IEnumerable<XElement> resources =
+			from item in xmlDoc.Root.Descendants(nameSpace + "Card")
+			where item.Attribute("type").Value == "resource"
+			select item;
+
+			foreach (XElement resource in resources)
+			{
+				string resourceCardName = resource.Attribute("name").Value;
+				int resourceValue = int.Parse(resource.Element(nameSpace + "resources").Value);
+				int thresholdType = int.Parse(resource.Element(nameSpace + "threshold").Value);
+
+				new ResourceCardDefinition(resourceCardName, resourceValue, thresholdType);
+				Debug.Log("Loaded a resource card: " + resourceCardName + ", " + resourceValue.ToString() + ", " + thresholdType.ToString());
+			}
+
+			//get spell cards
+			IEnumerable<XElement> spells =
+			from item in xmlDoc.Root.Descendants(nameSpace + "Card")
+			where item.Attribute("type").Value == "spell"
+			select item;
+
+			foreach (XElement spell in spells)
+			{
+				string spellCardName = spell.Attribute("name").Value;
+				int spellCost = int.Parse(spell.Element(nameSpace + "cost").Value);
+				string spellText = spell.Element(nameSpace + "text").Value;
+
+				new SpellCardDefinition(spellCardName, spellCost, spellText);
+				Debug.Log("Loaded a spell card: " + spellCardName + ", " + spellCost.ToString() + ", " + spellText);
+			}
+
+			//get creature cards
+			IEnumerable<XElement> creatures =
+			from item in xmlDoc.Root.Descendants(nameSpace + "Card")
+			where item.Attribute("type").Value == "creature"
+			select item;
+
+			foreach (XElement creature in creatures)
+			{
+				string creatureCardName = creature.Attribute("name").Value;
+				int creatureCost = int.Parse(creature.Element(nameSpace + "cost").Value);
+				int creaturePower = int.Parse(creature.Element(nameSpace + "power").Value);
+				int creatureToughness = int.Parse(creature.Element(nameSpace + "toughness").Value);
+				string creatureText = creature.Element(nameSpace + "text").Value;
+
+				new SpellCardDefinition(creatureCardName, creatureCost, creatureText);
+				Debug.Log("Loaded a creature card: " + creatureCardName + ", " + creatureCost.ToString() + ", " + creaturePower.ToString() + ", " + creatureToughness.ToString() + ", " + creatureText);
+			}
+		}
+		catch (XmlException ex)
+		{
+			Debug.LogError("Could not load card game data.");
+			Debug.LogError(ex.StackTrace);
+			return;
+		}
 	}
 
 	private IEnumerator InitializeGameAfterSmallTime()

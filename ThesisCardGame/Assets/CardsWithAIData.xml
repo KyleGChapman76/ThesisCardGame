@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<Cards xmlns="http://example.com/Cards">
+	<Card type="resource" name="Resource 1">
+		<resources>1</resources>
+		<threshold>1</threshold>
+	</Card>
+	<Card type="resource" name="Resource 2">
+		<resources>1</resources>
+		<threshold>2</threshold>
+	</Card>
+  <Card type="spell" name="Spell 1">
+		<cost>1</cost>
+		<text>You gain 3 life.</text>
+	</Card>
+  <Card type="spell" name="Spell 2">
+		<cost>1</cost>
+		<text>Target opponent loses 4 life.</text>
+	</Card>
+  <Card type="spell" name="Spell 3">
+		<cost>3</cost>
+		<text>Destroy target creature.</text>
+	</Card>
+	<Card type="creature" name="Creature 1">
+		<cost>2</cost>
+		<power>1</power>
+		<toughness>2</toughness>
+    <text>Flight</text>
+	</Card>
+	<Card type="creature" name="Creature 2">
+		<cost>3</cost>
+		<power>1</power>
+		<toughness>2</toughness>
+    <text>Overrun</text>
+	</Card>
+	<Card type="creature" name="Creature 3">
+		<cost>4</cost>
+		<power>1</power>
+		<toughness>2</toughness>
+    <text>Speed</text>
+	</Card>
+</Cards>

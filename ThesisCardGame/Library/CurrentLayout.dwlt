@@ -45,7 +45,7 @@ MonoBehaviour:
   m_MinSize: {x: 681, y: 342}
   m_MaxSize: {x: 12006, y: 8042}
   vertical: 0
-  controlID: 114
+  controlID: 108
 --- !u!114 &3
 MonoBehaviour:
   m_ObjectHideFlags: 52
@@ -252,8 +252,8 @@ MonoBehaviour:
     y: 0
     width: 1173
     height: 522
-  m_MinSize: {x: 200, y: 200}
-  m_MaxSize: {x: 4000, y: 4000}
+  m_MinSize: {x: 204, y: 221}
+  m_MaxSize: {x: 4004, y: 4021}
   m_ActualView: {fileID: 17}
   m_Panes:
   - {fileID: 17}
@@ -422,9 +422,9 @@ MonoBehaviour:
       m_Icon: {fileID: 0}
       m_ResourceFile: 
   m_ListAreaState:
-    m_SelectedInstanceIDs: 2ccffeff
-    m_LastClickedInstanceID: -78036
-    m_HadKeyboardFocusLastEvent: 0
+    m_SelectedInstanceIDs: ea280000
+    m_LastClickedInstanceID: 10474
+    m_HadKeyboardFocusLastEvent: 1
     m_ExpandedInstanceIDs: b20600007896ffff000000009a270000b0270000
     m_RenameOverlay:
       m_UserAcceptedRename: 0
@@ -515,23 +515,23 @@ MonoBehaviour:
   m_PersistentViewDataDictionary: {fileID: 0}
   m_TreeViewState:
     scrollPos: {x: 0, y: 0}
-    m_SelectedIDs: e8420000
-    m_LastClickedID: 17128
-    m_ExpandedIDs: 8abafefff0befeff5cbffeff8ec0feff96c0feffa8cffeff6aeafeff62effeffe6effeff18f1feff20f1feff9c03ffff2204ffff5405ffff5c05ffffb80bffff3c0cffff6e0dffff760dffffae2cffff662effffea2efffffc2fffff1830ffffe032ffff323fffffb63fffffe840fffff040ffff1447ffffbe48ffff4249ffff544affff704affff80d2ffff26f0ffff9efbffff00000000242900004c290000c43d0000f23d0000103e0000e84200003c430000
+    m_SelectedIDs: ea280000
+    m_LastClickedID: 0
+    m_ExpandedIDs: dac9ffff34d7ffff9efbffff00000000
     m_RenameOverlay:
       m_UserAcceptedRename: 0
-      m_Name: GameOverResultText
-      m_OriginalName: GameOverResultText
+      m_Name: 
+      m_OriginalName: 
       m_EditFieldRect:
         serializedVersion: 2
         x: 0
         y: 0
         width: 0
         height: 0
-      m_UserData: 17242
+      m_UserData: 0
       m_IsWaitingForDelay: 0
       m_IsRenaming: 0
-      m_OriginalEventType: 0
+      m_OriginalEventType: 11
       m_IsRenamingFilename: 0
       m_ClientGUIView: {fileID: 4}
     m_SearchString: 
