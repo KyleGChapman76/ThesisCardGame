@@ -1,4 +1,6 @@
-﻿public class CreatureCardDefinition : SpellCardDefinition
+﻿using System.Collections.Generic;
+
+public class CreatureCardDefinition : SpellCardDefinition
 {
 	public int Power
 	{
@@ -18,7 +20,7 @@
 	}
 	protected int toughness;
 
-	public CreatureCardDefinition(string cardName, int manaCost, string cardText, int power, int toughness) : base(cardName, manaCost, cardText)
+	public CreatureCardDefinition(string cardName, int manaCost, string cardText, int power, int toughness, float cardStrength) : base(cardName, manaCost, cardText, null, cardStrength)
 	{
 		this.power = power;
 		this.toughness = toughness;

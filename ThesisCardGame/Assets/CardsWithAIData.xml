@@ -1,41 +1,57 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <Cards xmlns="http://example.com/Cards">
-	<Card type="resource" name="Resource 1">
+	<Card type="resource" name="Resource 1" strength="1">
 		<resources>1</resources>
 		<threshold>1</threshold>
 	</Card>
-	<Card type="resource" name="Resource 2">
+	<Card type="resource" name="Resource 2" strength="1">
 		<resources>1</resources>
 		<threshold>2</threshold>
 	</Card>
-  <Card type="spell" name="Spell 1">
+  <Card type="spell" name="Spell 1" strength="1">
 		<cost>1</cost>
 		<text>You gain 3 life.</text>
+    <effect code="gainlife">
+      <variable>3</variable>
+    </effect>
 	</Card>
-  <Card type="spell" name="Spell 2">
+  <Card type="spell" name="Spell 2" strength="1">
 		<cost>1</cost>
 		<text>Target opponent loses 4 life.</text>
+    <effect code="loselife">
+      <variable>4</variable>
+    </effect>
 	</Card>
-  <Card type="spell" name="Spell 3">
+  <Card type="spell" name="Spell 3" strength="1">
 		<cost>3</cost>
-		<text>Destroy target creature.</text>
+		<text>Draw 2 cards.</text>
+    <effect code="drawcards">
+      <variable>2</variable>
+    </effect>
 	</Card>
-	<Card type="creature" name="Creature 1">
+	<Card type="creature" name="Creature 1" strength="1">
 		<cost>2</cost>
 		<power>1</power>
 		<toughness>2</toughness>
     <text>Flight</text>
+    <ability code="flight"/>
 	</Card>
-	<Card type="creature" name="Creature 2">
+	<Card type="creature" name="Creature 2" strength="1">
 		<cost>3</cost>
 		<power>1</power>
 		<toughness>2</toughness>
     <text>Overrun</text>
+    <ability code="overrun"/>
 	</Card>
-	<Card type="creature" name="Creature 3">
+	<Card type="creature" name="Creature 3" strength="1">
 		<cost>4</cost>
 		<power>1</power>
 		<toughness>2</toughness>
     <text>Speed</text>
+    <ability code="enterbattlefield">
+      <effect code="gainlife">
+        <variable>3</variable>
+      </effect>
+    </ability>
 	</Card>
 </Cards>

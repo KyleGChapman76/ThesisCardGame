@@ -37,7 +37,7 @@ public class LocalGameManager : MonoBehaviour, IGameManager
 	}
 	private NetworkedGameManager serverGameManager;
 
-		//start the local game logic
+	//start the local game logic
 	//if find a network manager, wait for all players to load in to then initialize multiplayer logic
 	//otherwise, setup players
 	void Start ()
@@ -97,8 +97,33 @@ public class LocalGameManager : MonoBehaviour, IGameManager
 				string spellCardName = spell.Attribute("name").Value;
 				int spellCost = int.Parse(spell.Element(nameSpace + "cost").Value);
 				string spellText = spell.Element(nameSpace + "text").Value;
+				float cardStrength = float.Parse(spell.Attribute("strength").Value);
 
-				new SpellCardDefinition(spellCardName, spellCost, spellText);
+				IEnumerable<XElement> effects =
+				from item in spell.Descendants(nameSpace + "Card")
+				select item;
+
+				Dictionary<SpellEffect, int[]> spellEffects = new Dictionary<SpellEffect, int[]>();
+				foreach (XElement effect in effects)
+				{
+					string code = effect.Attribute("code").Value;
+					SpellEffect spellEffect = SpellCardDefinition.StringToSpellEffect(code);
+
+					IEnumerable<XElement> variables =
+					from item in effect.Descendants(nameSpace + "variable")
+					select item;
+
+					List<int> variableValues = new List<int>();
+
+					foreach (XElement variable in variables)
+					{
+						variableValues.Add(int.Parse(variable.Value));
+                    }
+
+					spellEffects.Add(spellEffect, variableValues.ToArray());
+                }
+
+				new SpellCardDefinition(spellCardName, spellCost, spellText, spellEffects, cardStrength);
 				Debug.Log("Loaded a spell card: " + spellCardName + ", " + spellCost.ToString() + ", " + spellText);
 			}
 
@@ -111,12 +136,13 @@ public class LocalGameManager : MonoBehaviour, IGameManager
 			foreach (XElement creature in creatures)
 			{
 				string creatureCardName = creature.Attribute("name").Value;
+				float cardStrength = float.Parse(creature.Attribute("strength").Value);
 				int creatureCost = int.Parse(creature.Element(nameSpace + "cost").Value);
 				int creaturePower = int.Parse(creature.Element(nameSpace + "power").Value);
 				int creatureToughness = int.Parse(creature.Element(nameSpace + "toughness").Value);
 				string creatureText = creature.Element(nameSpace + "text").Value;
 
-				new SpellCardDefinition(creatureCardName, creatureCost, creatureText);
+				new CreatureCardDefinition(creatureCardName, creatureCost, creatureText, creaturePower, creatureToughness, cardStrength);
 				Debug.Log("Loaded a creature card: " + creatureCardName + ", " + creatureCost.ToString() + ", " + creaturePower.ToString() + ", " + creatureToughness.ToString() + ", " + creatureText);
 			}
 		}
@@ -219,7 +245,14 @@ public class LocalGameManager : MonoBehaviour, IGameManager
 		{
 			return serverGameManager.TryPlayCard(card);
 		}
-		return localPlayer.TryPlayCard(card);
+		if (isPlayersTurn)
+		{
+			return localPlayer.TryPlayCard(card);
+		}
+		else
+		{
+			return opponentPlayer.TryPlayCard(card);
+		}
 	}
 
 	public void PlayerStatusChanged()

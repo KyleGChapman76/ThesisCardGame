@@ -38,6 +38,11 @@ public class OfflineTCGPlayer : MonoBehaviour, ICardGamePlayer
 		return lifeTotal;
     }
 
+	public bool HasPlayedAResourceThisTurn()
+	{
+		return hasPlayedAResourceThisTurn;
+	}
+
 	public List<Card> GetHand()
 	{
 		return hand;

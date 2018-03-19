@@ -25,6 +25,8 @@ public abstract class CardDefinition : IComparable
 	}
 	protected string cardName;
 
+	
+
 	public int MaxCopiesInDeck
 	{
 		get
